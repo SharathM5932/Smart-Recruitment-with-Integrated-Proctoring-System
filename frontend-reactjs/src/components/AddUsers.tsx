@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import "./css/AddUsers.css";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { registerUser } from "../redux/slices/authSlice";
 import { fetchRoles } from "../redux/slices/rolesSlice";
 import type { RootState } from "../redux/store";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import "./css/AddUsers.css";
 
 const AddUser: React.FC = () => {
   const dispatch = useDispatch<any>();
@@ -126,71 +126,72 @@ const AddUser: React.FC = () => {
         <h2>
           Add users <span className="highlight">mirafra</span>
         </h2>
-        <form className="user-form" onSubmit={handleSubmit} noValidate>
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name:"
-            value={formData.name}
-            onChange={handleChange}
-          />
-          {errors.name && <p className="error">{errors.name}</p>}
+        <div className="add-user-c">
+          <form className="user-form" onSubmit={handleSubmit} noValidate>
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name:"
+              value={formData.name}
+              onChange={handleChange}
+            />
+            {errors.name && <p className="error">{errors.name}</p>}
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Id:"
-            value={formData.email}
-            onChange={handleChange}
-          />
-          {errors.email && <p className="error">{errors.email}</p>}
+            <input
+              type="email"
+              name="email"
+              placeholder="Email Id:"
+              value={formData.email}
+              onChange={handleChange}
+            />
+            {errors.email && <p className="error">{errors.email}</p>}
 
-          <input
-            type="tel"
-            name="phone"
-            placeholder="Phone No.:"
-            value={formData.phone}
-            onChange={handleChange}
-          />
-          {errors.phone && <p className="error">{errors.phone}</p>}
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Phone No.:"
+              value={formData.phone}
+              onChange={handleChange}
+            />
+            {errors.phone && <p className="error">{errors.phone}</p>}
 
-          <select name="roleId" value={formData.roleId} onChange={handleChange}>
-            <option value="">Select Role</option>
-            {roles.map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.name}
-              </option>
-            ))}
-          </select>
-          {errors.roleId && <p className="error">{errors.roleId}</p>}
+            <select
+              name="roleId"
+              value={formData.roleId}
+              onChange={handleChange}
+            >
+              <option value="">Select Role</option>
+              {roles.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {role.name}
+                </option>
+              ))}
+            </select>
+            {errors.roleId && <p className="error">{errors.roleId}</p>}
 
-          <select name="status" value={formData.status} onChange={handleChange}>
-            <option value="">Select Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-          {errors.status && <p className="error">{errors.status}</p>}
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+            >
+              <option value="">Select Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            {errors.status && <p className="error">{errors.status}</p>}
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password:"
-            value={formData.password}
-            onChange={handleChange}
-          />
-          {errors.password && <p className="error">{errors.password}</p>}
-
-          <button type="submit">Register</button>
-        </form>
-        {roleLoading && <p>Loading roles...</p>}
-      </div>
-
-      <div className="image-section">
-        <img
-          src="src/assets/add-user-placeholder.png"
-          alt="add-user-placeholder"
-          className="illustration"
-        />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password:"
+              value={formData.password}
+              onChange={handleChange}
+            />
+            {errors.password && <p className="error">{errors.password}</p>}
+            <button type="submit">Register</button>
+          </form>
+          {roleLoading && <p>Loading roles...</p>}
+        </div>
       </div>
     </div>
   );

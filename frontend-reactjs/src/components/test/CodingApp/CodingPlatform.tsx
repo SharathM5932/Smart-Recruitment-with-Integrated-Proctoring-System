@@ -1,8 +1,8 @@
-import React, { use, useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
-import "./CodingPlatform.css";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "./CodingPlatform.css";
 
 interface TestCase {
   input: string;
@@ -175,6 +175,17 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit }) => {
             </ul>
           </>
         )}
+
+        <div className="alter-before-coding">
+          <p>Note</p>
+          <ul>
+            <li>Write your code inside the provided function signature.</li>
+            <li>
+              Your function must return the result; do not use print statements.
+            </li>
+            <li>Avoid using built-in methods unless explicitly allowed.</li>
+          </ul>
+        </div>
       </div>
 
       <div className="right-panel">
@@ -202,7 +213,7 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit }) => {
             theme="vs-dark"
             onChange={(val) => setCode(val || "")}
             options={{
-              fontSize: 14,
+              fontSize: 16,
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
               automaticLayout: true,
@@ -210,15 +221,11 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit }) => {
           />
 
           <div className="button-row">
-            <button
-              className="btn run-btn"
-              onClick={handleRun}
-              disabled={running}
-            >
+            <button className="run-btn" onClick={handleRun} disabled={running}>
               {running ? "Running..." : "Run"}
             </button>
             <button
-              className="btn submit-btn"
+              className="submit-btn"
               onClick={handleSubmit}
               disabled={submitting}
             >

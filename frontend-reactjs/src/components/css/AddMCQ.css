@@ -1,22 +1,29 @@
-.mcq-container {
-  padding: 2rem;
+.mcq-containers {
+  padding: 1em;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   position: relative;
+  font-family: var(--font-family-brooklyn);
+}
+.mcq-box {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-h2 {
-  align-self: flex-start;
+.mcq-box h2 {
+  width: 100%;
   font-size: 1.5rem;
-  margin-bottom: 1rem;
 }
 
 .btnn {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 10px; 
+  gap: 10px;
   width: 100%;
   margin-bottom: 1rem;
 }
@@ -40,8 +47,8 @@ h2 {
 form {
   display: flex;
   flex-direction: column;
-  width: 320px;
-  margin-top: 1rem;
+  width: 400px;
+  margin-top: 1em;
 }
 
 input,
@@ -50,6 +57,7 @@ select {
   padding: 12px;
   font-size: 14px;
   border: none;
+  border-radius: 8px;
   border-bottom: 1px solid #aaa;
   background-color: #f5f5f5;
   outline: none;

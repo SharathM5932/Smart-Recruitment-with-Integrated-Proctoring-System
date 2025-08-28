@@ -1,32 +1,7 @@
-/* Global Reset and Base Font */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  outline: none;
-  color: black;
-  font-family: "Roboto", sans-serif; /* Use only one consistent font */
-}
-
-/* Ensure full height layout */
-html,
-body,
-#root {
-  height: 100%;
+.container {
   width: 100%;
-}
-
-/* App Layout */
-.app-container {
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-/* Scrollable Main Content Area */
-.content {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }

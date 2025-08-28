@@ -17,6 +17,7 @@ import { MalpracticeModule } from './malpractice/malpractice.module';
 import { ExecuteModule } from './execute/execute.module';
 import { ProblemModule } from './problem/problem.module';
 import { SubmissionModule } from './submissions/submission.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { SubmissionModule } from './submissions/submission.module';
     ProblemModule,
     ExecuteModule,
     SubmissionModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

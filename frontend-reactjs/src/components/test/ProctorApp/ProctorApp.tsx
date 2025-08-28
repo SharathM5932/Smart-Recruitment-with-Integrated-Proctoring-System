@@ -1,18 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import WebcamCapture from "./WebcamCapture";
-import { useRef } from "react";
 import "./ProctorApp.css";
+import WebcamCapture from "./WebcamCapture";
 
 import {
+  incrementMalpractice,
   setAlertMessage,
   setIsTestCompleted,
-  incrementMalpractice,
   setVerificationComplete,
 } from "../../../redux/slices/proctorSlice";
 
 import { type RootState } from "../../../redux/store";
-import MalpracticeTerminated from "./MalpracticeTerminated";
 
 type MyComponentProps = {
   handleFinalSubmit: () => Promise<void>;
@@ -74,7 +72,7 @@ const ProctorApp: React.FC<MyComponentProps> = ({ handleFinalSubmit }) => {
       <div className="main-content">
         {isTestStarted && !isTestCompleted && (
           <div className="violation-count">
-            Violations: {malpracticeCount}/7
+            Violations: {malpracticeCount}/30
           </div>
         )}
         <WebcamCapture

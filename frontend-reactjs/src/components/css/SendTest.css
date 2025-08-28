@@ -1,29 +1,28 @@
 .send-link-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: var(--font-family-brooklyn);
 }
 
-.send-link-container h2 {
-  align-self: flex-start;
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
+.send-link-title {
+  text-align: center;
+}
+
+.send-link-form-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Scoped form */
 .send-link-form {
-  display: flex;
-  flex-direction: column;
-  width: 300px;
+  width: 400px;
 }
 
 /* Scoped input */
 .send-link-input {
   border-radius: 6px;
   margin: 8px 0;
-  padding: 12px;
+  padding: 1em 1.5em;
   font-size: 14px;
   border: none;
   border-bottom: 1px solid #999;

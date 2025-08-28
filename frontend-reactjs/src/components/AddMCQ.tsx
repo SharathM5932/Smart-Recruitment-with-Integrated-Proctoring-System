@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import "./css/AddMCQ.css";
 import axios from "axios";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import "./css/AddMCQ.css";
 
 const AddMCQ = () => {
   const [formData, setFormData] = useState({
@@ -162,26 +162,27 @@ const AddMCQ = () => {
   };
 
   return (
-    <div className="mcq-container">
-      <h2>Add MCQ Question</h2>
-      <div className="btnn">
-        <label htmlFor="xlsxUpload" className="upload-label">
-          Upload XLSX
-        </label>
-        <input
-          id="xlsxUpload"
-          type="file"
-          accept=".xlsx, .xls"
-          onChange={handleUploadClick}
-          hidden
-        />
-        <a href="src/assets/template.xlsx" download>
-          <button type="button" className="upload-label">
-            Download Template
-          </button>
-        </a>
+    <div className="mcq-containers">
+      <div className="mcq-box">
+        <h2>Add MCQ Question</h2>
+        <div className="btnn">
+          <label htmlFor="xlsxUpload" className="upload-label">
+            Upload XLSX
+          </label>
+          <input
+            id="xlsxUpload"
+            type="file"
+            accept=".xlsx, .xls"
+            onChange={handleUploadClick}
+            hidden
+          />
+          <a href="src/assets/template.xlsx" download>
+            <button type="button" className="upload-label">
+              Download Template
+            </button>
+          </a>
+        </div>
       </div>
-
       <form onSubmit={handleSubmit}>
         <input
           type="text"

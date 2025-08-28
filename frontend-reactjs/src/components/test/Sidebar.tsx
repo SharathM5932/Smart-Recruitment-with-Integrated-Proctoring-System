@@ -96,13 +96,15 @@ const Sidebar = ({
         questions.every(
           (q) => q.status === "answered" || q.status === "skipped"
         ) && (
-          <button
-            className="submit-button"
-            style={{ marginTop: "20px" }}
-            onClick={onStartCodingTest}
-          >
-            <>Coding Test</>
-          </button>
+          <div className="coding-next">
+            <button
+              className="submit-button"
+              style={{ marginTop: "20px" }}
+              onClick={onStartCodingTest}
+            >
+              <>Coding Test</>
+            </button>
+          </div>
         )}
     </div>
   );

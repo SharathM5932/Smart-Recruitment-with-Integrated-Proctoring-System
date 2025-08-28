@@ -1,8 +1,8 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import "./css/Jobs.css";
 import { toast } from "sonner";
+import "./css/Jobs.css";
 
 interface Job {
   id: string;

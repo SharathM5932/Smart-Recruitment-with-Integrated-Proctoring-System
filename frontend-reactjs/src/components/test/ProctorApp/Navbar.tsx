@@ -1,12 +1,18 @@
 import { useSelector } from "react-redux";
-import "./Navbar.css";
 import { type RootState } from "../../../redux/store";
+import "./Navbar.css";
 
 const Navbar = () => {
-  const capturedImage = useSelector((state: RootState) => state.proctor.capturedImage);
+  const capturedImage = useSelector(
+    (state: RootState) => state.proctor.capturedImage
+  );
   return (
     <nav className="navbarr">
-      <h2 className="navbarr-title" style={{"color":"green"}}>mirafra</h2>
+      <img
+        src="../../../../src/assets/mirafraLogo.svg"
+        alt="Logo"
+        className="navbar__logo"
+      />
       <div className="navbarr-right">
         {capturedImage && (
           <img

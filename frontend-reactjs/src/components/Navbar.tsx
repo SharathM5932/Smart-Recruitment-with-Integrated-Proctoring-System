@@ -1,17 +1,21 @@
-import "./css/Navbar.css";
-import { Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import type { RootState } from "../redux/store";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { NavLink, useNavigate } from "react-router-dom";
 import { logout } from "../redux/slices/authSlice";
+import type { RootState } from "../redux/store";
+import "./css/Navbar.css";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.isAuthenticated
   );
   const user = useSelector((state: RootState) => state.auth.user);
   const role = useSelector((state: RootState) => state.auth.user?.role);
+
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login");
@@ -19,80 +23,122 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
+      {/* Left: Logo */}
       <div className="navbar__left">
-        <Link to="/">
+        <NavLink to="/">
           <img
             src="src/assets/mirafraLogo.svg"
             alt="Logo"
             className="navbar__logo"
           />
-        </Link>
+        </NavLink>
       </div>
 
-      <div className="navbar__center">
+      {/* Mobile menu toggle */}
+      <div className="navbar__toggle" onClick={() => setMenuOpen(!menuOpen)}>
+        ☰
+      </div>
+
+      {/* Center: Links */}
+      <div className={`navbar__center ${menuOpen ? "open" : ""}`}>
         <ul className="navbar__links">
-          {isAuthenticated && role == "super admin" && (
+          {isAuthenticated && role === "super admin" && (
             <li>
-              <Link to="/all-users">All Users</Link>
+              <NavLink
+                to="/all-users"
+                className={({ isActive }) => (isActive ? "active-link" : "")}
+              >
+                All Users
+              </NavLink>
             </li>
           )}
-          {isAuthenticated && role == "super admin" && (
+          {isAuthenticated && role === "super admin" && (
             <li>
-              <Link to="/add-users">Add Users</Link>
-            </li>
-          )}
-          {isAuthenticated &&
-            (role == "super admin" || role == "talent acquisition") && (
-              <li>
-                <Link to="/send-test">Send Test</Link>
-              </li>
-            )}
-          {isAuthenticated &&
-            (role == "super admin" ||
-              role == "talent acquisition" ||
-              role == "manager") && (
-              <li>
-                <Link to="/jobs">Jobs</Link>
-              </li>
-            )}
-          {isAuthenticated && (role == "manager" || role == "super admin") && (
-            <li>
-              <Link to="/add-questions">Add Questions</Link>
+              <NavLink
+                to="/add-users"
+                className={({ isActive }) => (isActive ? "active-link" : "")}
+              >
+                Add Users
+              </NavLink>
             </li>
           )}
           {isAuthenticated &&
-            (role == "super admin" ||
-              role == "talent acquisition" ||
-              role == "manager") && (
+            (role === "super admin" || role === "talent acquisition") && (
               <li>
-                <Link to="/view-questions">View Questions</Link>
+                <NavLink
+                  to="/send-test"
+                  className={({ isActive }) => (isActive ? "active-link" : "")}
+                >
+                  Send Test
+                </NavLink>
               </li>
             )}
           {isAuthenticated &&
-            (role == "super admin" ||
-              role == "talent acquisition" ||
-              role == "manager") && (
+            (role === "super admin" ||
+              role === "talent acquisition" ||
+              role === "manager") && (
               <li>
-                <Link to="/results">Results</Link>
+                <NavLink
+                  to="/jobs"
+                  className={({ isActive }) => (isActive ? "active-link" : "")}
+                >
+                  Jobs
+                </NavLink>
+              </li>
+            )}
+          {isAuthenticated &&
+            (role === "manager" || role === "super admin") && (
+              <li>
+                <NavLink
+                  to="/add-questions"
+                  className={({ isActive }) => (isActive ? "active-link" : "")}
+                >
+                  Add Questions
+                </NavLink>
+              </li>
+            )}
+          {isAuthenticated &&
+            (role === "super admin" ||
+              role === "talent acquisition" ||
+              role === "manager") && (
+              <li>
+                <NavLink
+                  to="/view-questions"
+                  className={({ isActive }) => (isActive ? "active-link" : "")}
+                >
+                  View Questions
+                </NavLink>
+              </li>
+            )}
+          {isAuthenticated &&
+            (role === "super admin" ||
+              role === "talent acquisition" ||
+              role === "manager") && (
+              <li>
+                <NavLink
+                  to="/results"
+                  className={({ isActive }) => (isActive ? "active-link" : "")}
+                >
+                  Results
+                </NavLink>
               </li>
             )}
         </ul>
       </div>
 
+      {/* Right: User + Logout/Login */}
       <div className="navbar__right">
         {isAuthenticated ? (
           <>
             <span className="navbar__user">{user?.name}</span>
-            <button className="navbar__btn" onClick={handleLogout}>
+            <button className="btn" onClick={handleLogout}>
               Log out
             </button>
           </>
         ) : (
-          <button className="navbar__btn">
-            <Link to="/login" className="btn">
-              Log in
-            </Link>
-          </button>
+          <NavLink to="/login" className="btn">
+            Log in
+          </NavLink>
         )}
       </div>
     </nav>
@@ -100,35 +146,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-// import './Navbar.css';
-// import { Link } from 'react-router-dom';
-// const Navbar = () => {
-//   return (
-//     <nav className="navbar">
-//       <div className="navbar__left">
-//         <Link to="/">
-//         <img src="src/assets/mirafraLogo.svg" alt="Logo" className="navbar__logo" />
-//         </Link>
-//       </div>
-//       <div className="navbar__center">
-//         <ul className="navbar__links">
-//           <li><Link to="/all-users">All Users</Link></li>
-//           <li><Link to="/add-users">Add Users</Link></li>
-//           <li><Link to="/send-test">Send Test</Link></li>
-//           <li><Link to="/jobs">Jobs</Link></li>
-//           <li><Link to="/add-questions">Add Questions</Link></li>
-//           <li><Link to="/view-questions">View Questions</Link></li>
-//           <li><Link to="/results">Results</Link></li>
-//         </ul>
-//       </div>
-//       <div className="navbar__right">
-//         <button className="navbar__btn"><Link to="/login" className='btn'>Log in</Link></button>
-//         <button className="navbar__btn"><Link to="/logout" className='btn'>Log out</Link></button>
-
-//       </div>
-//     </nav>
-//   );
-// };
-
-// export default Navbar;

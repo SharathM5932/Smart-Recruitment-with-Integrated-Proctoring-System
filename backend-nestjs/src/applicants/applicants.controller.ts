@@ -5,6 +5,7 @@ import { ApplicantsService } from './applicants.service';
 export class ApplicantsController {
   constructor(private readonly applicantsService: ApplicantsService) {}
 
+  //   These 3 endpoints for Applicant Dashboard
   @Get('results')
   async applicantResult() {
     const result = await this.applicantsService.applicantResult();

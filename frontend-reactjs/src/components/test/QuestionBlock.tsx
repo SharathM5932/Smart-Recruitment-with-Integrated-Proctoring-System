@@ -12,7 +12,7 @@ interface MCQ {
 
 interface ApiQuestion {
   id: string;
-  status: 'not_visited' | 'skipped' | 'answered';
+  status: "not_visited" | "skipped" | "answered";
   selectedOptionId: string | null;
   editable: boolean;
   mcq_question: MCQ;
@@ -33,7 +33,7 @@ const QuestionBlock = ({
   answers,
   handleOptionSelect,
   handleNext,
-  handleSkip
+  handleSkip,
 }: Props) => {
   const q = currentQuestion;
 
@@ -66,11 +66,11 @@ const QuestionBlock = ({
         ))}
       </div>
 
-      <div style={{ marginTop: '1.5rem' }}>
+      <div className="action-text" style={{ marginTop: "1.5rem" }}>
         <button
           className="skip-button"
           onClick={handleSkip}
-          disabled={q.status === 'answered'}
+          disabled={q.status === "answered"}
         >
           Skip
         </button>

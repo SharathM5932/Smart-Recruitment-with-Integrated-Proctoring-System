@@ -1,7 +1,8 @@
 .view-questions-container {
   text-align: left;
   padding: 1rem;
-  font-family: sans-serif;
+  font-family: var(--font-family-brooklyn);
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -39,7 +40,6 @@
   padding: 0.5rem 0.75rem;
   font-weight: bold;
 }
-
 
 /* .view-questions-container {
   text-align: left;

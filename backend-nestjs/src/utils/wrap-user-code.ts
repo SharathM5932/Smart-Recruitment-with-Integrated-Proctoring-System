@@ -49,6 +49,11 @@ function extractParams(signature: string): { type: string; name: string }[] {
           type = 'float';
         } else if (type.includes('bool') || type.includes('boolean')) {
           type = 'bool';
+        } else if (type.match(/^List<\s*String\s*>$/)) {
+          type = 'List<String>';
+        } else if (type.match(/^List<\s*string\s*>$/i)) {
+          // lowercase "string" for C# case
+          type = 'List<string>';
         } else if (type.includes('string') || type.includes('String')) {
           type = 'string';
         }
@@ -208,7 +213,10 @@ export function wrapUserCode({
             } else {
               parser += `    ${name} = set(re.split(r"[\\s,]+", lines[${idx++}].strip()))\n`; // default string
             }
-          } else if (type.toLowerCase().startsWith('dict[') || type.startsWith('map[')) {
+          } else if (
+            type.toLowerCase().startsWith('dict[') ||
+            type.startsWith('map[')
+          ) {
             const content = type.slice(type.indexOf('[') + 1, -1).split(',');
             const keyType = content[0]?.trim();
             const valueType = content[1]?.trim();
@@ -258,37 +266,42 @@ ${pyInputParser}
     }
 
     case 'javascript': {
-  function stripTypes(signature: string): string {
-    return signature
-      .replace(/:\s*\w+/g, '') // remove TypeScript-style `: type`
-      .replace(/<.*?>/g, '');  // remove generics like <T>
-  }
+      function stripTypes(signature: string): string {
+        return signature
+          .replace(/:\s*\w+/g, '') // remove TypeScript-style `: type`
+          .replace(/<.*?>/g, ''); // remove generics like <T>
+      }
 
-  function extractParamsFromSignature(signature: string): { name: string; type: string }[] {
-    const start = signature.indexOf('(');
-    const end = signature.indexOf(')');
-    if (start === -1 || end === -1 || start > end) return [];
+      function extractParamsFromSignature(
+        signature: string,
+      ): { name: string; type: string }[] {
+        const start = signature.indexOf('(');
+        const end = signature.indexOf(')');
+        if (start === -1 || end === -1 || start > end) return [];
 
-    const paramStr = signature.slice(start + 1, end).trim();
-    if (!paramStr) return [];
+        const paramStr = signature.slice(start + 1, end).trim();
+        if (!paramStr) return [];
 
-    return paramStr.split(',').map(param => {
-      const match = param.match(/(\w+)\s*(?:\/\*\s*([\w\[\]]+)\s*\*\/)?/);
-      if (!match) return { name: param.trim(), type: 'string' };
-      const [, name, typeRaw] = match;
-      const type = typeRaw?.toLowerCase() || 'string';
-      return { name, type };
-    });
-  }
+        return paramStr.split(',').map((param) => {
+          const match = param.match(/(\w+)\s*(?:\/\*\s*([\w\[\]]+)\s*\*\/)?/);
+          if (!match) return { name: param.trim(), type: 'string' };
+          const [, name, typeRaw] = match;
+          const type = typeRaw?.toLowerCase() || 'string';
+          return { name, type };
+        });
+      }
 
-  const jsCompatibleSignature = stripTypes(signature);
-  const params = extractParamsFromSignature(signature);
-  const paramNames = params.map(p => p.name).join(', ');
-  const paramCount = params.length;
+      const jsCompatibleSignature = stripTypes(signature);
+      const params = extractParamsFromSignature(signature);
+      const paramNames = params.map((p) => p.name).join(', ');
+      const paramCount = params.length;
 
-  const functionName = jsCompatibleSignature.match(/function\s+([a-zA-Z_$][a-zA-Z_$0-9]*)/)?.[1] || 'func';
+      const functionName =
+        jsCompatibleSignature.match(
+          /function\s+([a-zA-Z_$][a-zA-Z_$0-9]*)/,
+        )?.[1] || 'func';
 
-  return `
+      return `
 //${jsCompatibleSignature}
 ${userCode}
 //}
@@ -330,7 +343,7 @@ process.stdin.on('end', () => {
   }
 });
 `.trim();
-}
+    }
 
     case 'java': {
       const javaInput = params
@@ -382,6 +395,16 @@ for (int i = 0; i < rows${uniqueNameSuffix}.length; i++) {
     String[] elements = rows${uniqueNameSuffix}[i].split("[,\\s]+");
     ${name}[i] = elements;
 }`.trim();
+          if (type === 'List<String>') {
+            return `
+        String line${uniqueNameSuffix};
+        do {
+            line${uniqueNameSuffix} = sc.nextLine().trim();
+        } while (line${uniqueNameSuffix}.isEmpty());
+        List<String> ${name} = Arrays.asList(line${uniqueNameSuffix}.split("[,\\\\s]+"));
+          `.trim();
+          }
+
           return `// Unsupported type for ${name}`;
         })
         .join('\n'); // Changed join to just '\n' for clearer separation
@@ -505,6 +528,17 @@ string[][] ${name} = rows${uniqueSuffix}
         .Trim('[', ']')
         .Split(new[]{',',' '}, StringSplitOptions.RemoveEmptyEntries))
     .ToArray();`.trim();
+
+          if (type === 'List<string>')
+            return `
+string line${uniqueSuffix};
+do {
+    line${uniqueSuffix} = Console.ReadLine()?.Trim();
+} while (string.IsNullOrEmpty(line${uniqueSuffix}));
+List<string> ${name} = line${uniqueSuffix}
+    .Trim('[', ']')
+    .Split(new[]{',',' '}, StringSplitOptions.RemoveEmptyEntries)
+    .ToList();`.trim();
 
           return `// Unsupported type for ${name}`;
         })
@@ -707,5 +741,3 @@ int main() {
       return userCode;
   }
 }
-
- 

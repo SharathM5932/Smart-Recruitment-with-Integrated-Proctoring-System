@@ -1,13 +1,13 @@
+import { Applicant } from 'src/evaluation/entities/applicants.entity';
+import { TestAttempt } from 'src/evaluation/entities/test-attempt.entity';
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  ManyToOne,
+  Entity,
   JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-import { Applicant } from 'src/evaluation/entities/applicants.entity';
 
 @Entity('submission')
 export class Submission {
@@ -16,6 +16,17 @@ export class Submission {
 
   @Column({ type: 'uuid' })
   applicantId: string;
+
+  @ManyToOne(() => Applicant, (applicant) => applicant.submissions)
+  @JoinColumn({ name: 'applicantId' })
+  applicant: Applicant;
+
+  @Column({ type: 'uuid', nullable: true })
+  testAttemptId: string;
+
+  @ManyToOne(() => TestAttempt, (testAttempt) => testAttempt.submissions)
+  @JoinColumn({ name: 'test_attempt_id' })
+  testAttempt: TestAttempt;
 
   @Column()
   problemKey: string;
@@ -30,12 +41,8 @@ export class Submission {
   status: string; // "Accepted", "Wrong Answer", "Error", etc.
 
   @Column({ type: 'jsonb' })
-  testResults: any; // array of input/output/expected
+  testResults: any;
 
   @CreateDateColumn()
   createdAt: Date;
-
-  @ManyToOne(() => Applicant)
-  @JoinColumn({ name: 'applicantId' })
-  applicant: Applicant;
 }

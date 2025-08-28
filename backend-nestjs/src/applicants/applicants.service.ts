@@ -1,19 +1,15 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { isUUID } from 'class-validator';
 import { ApplicantQuestion } from 'src/applicant-questions/entities/applicant_questions.entity';
 import { Applicant } from 'src/evaluation/entities/applicants.entity';
 import { TestAttempt } from 'src/evaluation/entities/test-attempt.entity';
+import { Problem } from 'src/problem/entities/problem.entity';
 import { Submission } from 'src/problem/entities/submission.entity';
+import { Option } from 'src/question-bank/entities/option.entity';
 import { McqQuestion } from 'src/question-bank/entities/question.entity';
 import { Repository } from 'typeorm';
 import { ApplicantAnswer } from './entities/applicant-answer.entity';
-import { Option } from 'src/question-bank/entities/option.entity';
-import { isUUID } from 'class-validator';
-import { Problem } from 'src/problem/entities/problem.entity';
 
 @Injectable()
 export class ApplicantsService {

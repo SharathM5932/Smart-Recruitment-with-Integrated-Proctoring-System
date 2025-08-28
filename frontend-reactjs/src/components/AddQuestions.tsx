@@ -6,11 +6,11 @@ const AddQuestions: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="add-questions-container">
+    <div className="add-questions-containers">
       <h2>Add the questions</h2>
       <div className="button-container">
         <button
-          className="question-button"
+          className="question-buttons"
           onClick={() => navigate("/add-mcq")}
         >
           <div className="icon">McQ</div>
@@ -20,7 +20,10 @@ const AddQuestions: React.FC = () => {
           </div>
         </button>
 
-        {/* <button className="question-button" onClick={() => navigate('/add-coding')}>
+        {/* <button
+          className="question-buttons"
+          onClick={() => navigate("/add-coding")}
+        >
           <div className="icon">{`</>`}</div>
           <div>
             <div>Coding</div>

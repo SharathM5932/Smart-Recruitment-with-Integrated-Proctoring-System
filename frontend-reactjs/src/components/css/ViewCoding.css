@@ -1,16 +1,18 @@
 .coding-questions-container {
-  padding: 20px;
-  font-family: Arial, sans-serif;
-  background: #f8f9fa;
-  min-height: 100vh;
+  font-family: var(--font-family-brooklyn);
+}
+
+.coding-platform {
+  margin-top: 50px;
 }
 
 .coding-questions-container h1 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .filters {
+  font-family: var(--font-family-brooklyn);
   display: flex;
   justify-content: center;
   gap: 10px;
@@ -22,6 +24,7 @@
   padding: 8px 12px;
   border-radius: 5px;
   border: 1px solid #ccc;
+  font-family: var(--font-family-brooklyn);
 }
 
 .loading,
@@ -31,16 +34,19 @@
 }
 
 .problems-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
 }
 
 .problem-card {
+  width: 1000px;
   background: white;
   padding: 15px;
+  border: 1.5px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
   position: relative;
 }
 

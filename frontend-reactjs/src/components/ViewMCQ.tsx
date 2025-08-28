@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import './css/ViewMCQ.css';
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import "./css/ViewMCQ.css";
 
 interface Option {
   id: string;
@@ -27,15 +27,15 @@ interface MCQ {
 const ViewMCQ: React.FC = () => {
   const [mcqs, setMcqs] = useState<MCQ[]>([]);
   const [filteredMcqs, setFilteredMcqs] = useState<MCQ[]>([]);
-  const [search, setSearch] = useState('');
-  const [skillFilter, setSkillFilter] = useState('');
-  const [difficultyFilter, setDifficultyFilter] = useState('');
+  const [search, setSearch] = useState("");
+  const [skillFilter, setSkillFilter] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
   useEffect(() => {
     axios
-      .get('http://localhost:3000/mcq-questions')
+      .get("http://localhost:3000/mcq-questions")
       .then((res) => {
         setMcqs(res.data.data);
         setFilteredMcqs(res.data.data);
@@ -94,62 +94,102 @@ const ViewMCQ: React.FC = () => {
           <option value="hard">Hard</option>
         </select>
       </div>
+      <div className="quest-box">
+        {/* MCQ Cards */}
+        {currentItems.length === 0 ? (
+          <p>No MCQs found.</p>
+        ) : (
+          currentItems.map((mcq, index) => (
+            <div key={mcq.id} className="mcq-card">
+              <h3>
+                {indexOfFirstItem + index + 1}. {mcq.questionTitle}
+              </h3>
 
-      {/* MCQ Cards */}
-      {currentItems.length === 0 ? (
-        <p>No MCQs found.</p>
-      ) : (
-        currentItems.map((mcq, index) => (
-          <div key={mcq.id} className="mcq-card">
-            <h3>
-              {indexOfFirstItem + index + 1}. {mcq.questionTitle}
-            </h3>
-
-            <div className="options-grid">
-              {mcq.options.map((option) => (
-                <div
-                  key={option.id}
-                  className={`option-item ${option.isCorrect ? 'correct' : ''}`}
-                >
-                  {option.text}
-                </div>
-              ))}
-            </div>
-
-
-              <div className='btm-container'>
-
-            <p className="meta">
-              Created By: {mcq.createdBy} |{' '}
-              {new Date(mcq.createdAt).toLocaleString('en-IN', {
-                timeZone: 'Asia/Kolkata',
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </p>
-            <p className="tags">
-              <span>{mcq.skill.name}</span>
-              <span className={`difficulty ${mcq.difficulty.toLowerCase()}`}>
-                {mcq.difficulty}
-              </span>
-            </p>
+              <div className="options-grid">
+                {mcq.options.map((option) => (
+                  <div
+                    key={option.id}
+                    className={`option-item ${
+                      option.isCorrect ? "correct" : ""
+                    }`}
+                  >
+                    {option.text}
+                  </div>
+                ))}
               </div>
-          </div>
-        ))
-      )}
+
+              <div className="btm-container">
+                <p className="meta">
+                  Created By: {mcq.createdBy} |{" "}
+                  {new Date(mcq.createdAt).toLocaleString("en-IN", {
+                    timeZone: "Asia/Kolkata",
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+                <p className="tags">
+                  <span className="skill-name">{mcq.skill.name}</span>
+                  <span
+                    className={`difficulty ${mcq.difficulty.toLowerCase()}`}
+                  >
+                    {mcq.difficulty}
+                  </span>
+                </p>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
 
       {/* Pagination */}
       <div className="pagination">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-          <button
-            key={pageNum}
-            onClick={() => setCurrentPage(pageNum)}
-            className={pageNum === currentPage ? 'active' : ''}
-          >
-            {pageNum}
-          </button>
-        ))}
+        <button
+          onClick={() => {
+            setCurrentPage((prev) => Math.max(prev - 1, 1));
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          disabled={currentPage === 1}
+        >
+          Prev
+        </button>
+
+        {(() => {
+          const pageNumbers: number[] = [];
+          let start = Math.max(1, currentPage - 2);
+          let end = Math.min(totalPages, start + 4);
+
+          if (end - start < 4) {
+            start = Math.max(1, end - 4);
+          }
+
+          for (let i = start; i <= end; i++) {
+            pageNumbers.push(i);
+          }
+
+          return pageNumbers.map((pageNum) => (
+            <button
+              key={pageNum}
+              onClick={() => {
+                setCurrentPage(pageNum);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className={pageNum === currentPage ? "active" : ""}
+            >
+              {pageNum}
+            </button>
+          ));
+        })()}
+
+        <button
+          onClick={() => {
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
       </div>
     </div>
   );

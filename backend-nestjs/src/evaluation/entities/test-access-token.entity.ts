@@ -1,9 +1,9 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
+  Entity,
   JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { TestAttempt } from './test-attempt.entity';
 
@@ -24,4 +24,8 @@ export class TestAccessToken {
   @ManyToOne(() => TestAttempt)
   @JoinColumn({ name: 'test_attempt_id' })
   test_attempt: TestAttempt;
+
+  @ManyToOne(() => TestAttempt, (testAttempt) => testAttempt.test_access_tokens)
+  @JoinColumn({ name: 'test_attempt_id' })
+  test_attempts: TestAttempt;
 }

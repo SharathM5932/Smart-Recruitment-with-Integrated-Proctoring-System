@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import "./css/SendTest.css";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
+import "./css/SendTest.css";
 
 interface Skill {
   id: string;
@@ -59,20 +59,24 @@ const SendTest = () => {
 
   const validateField = (name: string, value: string) => {
     let error = "";
+
     if (name === "email") {
       if (!value.trim()) error = "Email is required";
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
         error = "Invalid email format";
     }
+
     if (name === "name") {
       if (!value.trim()) error = "Name is required";
       else if (!/^[A-Za-z\s]{3,}$/.test(value))
         error = "Name must be at least 3 letters";
     }
+
     if (name === "phone") {
       if (!value.trim()) error = "Phone is required";
       else if (!/^\d{10}$/.test(value)) error = "Phone must be 10 digits";
     }
+
     setErrors((prev) => ({ ...prev, [name]: error }));
     return error;
   };
@@ -83,7 +87,7 @@ const SendTest = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Live validation for the three fields
+    // Live validation for email, name, phone
     if (["email", "name", "phone"].includes(name)) {
       validateField(name, value);
     }
@@ -150,102 +154,106 @@ const SendTest = () => {
 
   return (
     <div className="send-link-container">
-      <h2>Send Test Link</h2>
-      <form className="send-link-form" onSubmit={handleSubmit}>
-        <input
-          className="send-link-input"
-          type="email"
-          name="email"
-          placeholder="Email Id:"
-          value={formData.email}
-          onChange={handleChange}
-        />
-        {errors.email && <p className="error">{errors.email}</p>}
+      <h2 className="send-link-title">Send Test Link</h2>
+      <div className="send-link-form-container">
+        <form className="send-link-form" onSubmit={handleSubmit}>
+          <input
+            className="send-link-input"
+            type="email"
+            name="email"
+            placeholder="Email Id"
+            value={formData.email}
+            onChange={handleChange}
+          />
+          {errors.email && <p className="error">{errors.email}</p>}
 
-        <input
-          className="send-link-input"
-          type="text"
-          name="name"
-          placeholder="Name:"
-          value={formData.name}
-          onChange={handleChange}
-        />
-        {errors.name && <p className="error">{errors.name}</p>}
+          <input
+            className="send-link-input"
+            type="text"
+            name="name"
+            placeholder="Name"
+            value={formData.name}
+            onChange={handleChange}
+          />
+          {errors.name && <p className="error">{errors.name}</p>}
 
-        <input
-          className="send-link-input"
-          type="tel"
-          name="phone"
-          placeholder="Phone no."
-          value={formData.phone}
-          onChange={handleChange}
-        />
-        {errors.phone && <p className="error">{errors.phone}</p>}
+          <input
+            className="send-link-input"
+            type="tel"
+            name="phone"
+            placeholder="Phone No."
+            value={formData.phone}
+            onChange={handleChange}
+          />
+          {errors.phone && <p className="error">{errors.phone}</p>}
 
-        <select
-          className="send-link-input"
-          name="job"
-          value={formData.job}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select Job</option>
-          {jobs.map((job) => (
-            <option key={job.id} value={job.id}>
-              {job.title} ({job.clientName})
+          <select
+            className="send-link-input"
+            name="job"
+            value={formData.job}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select Job</option>
+            {jobs.map((job) => (
+              <option key={job.id} value={job.id}>
+                {job.title} ({job.clientName})
+              </option>
+            ))}
+          </select>
+
+          <select
+            className="send-link-input"
+            name="experience"
+            value={formData.experience}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select Experience Level</option>
+            <option value="a0c3f9cb-d673-461f-b130-4437e57cedcf">
+              Fresher
             </option>
-          ))}
-        </select>
-
-        <select
-          className="send-link-input"
-          name="experience"
-          value={formData.experience}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select experience level</option>
-          <option value="a0c3f9cb-d673-461f-b130-4437e57cedcf">Fresher</option>
-          <option value="833d6ee0-27f6-462f-aba3-f4df251bf47e">Junior</option>
-          <option value="2ec03951-43b3-42a6-ad36-346d9b8d4ab6">
-            Mid-Level
-          </option>
-          <option value="8b5adf1a-2ec5-4094-89a8-992cee152f07">Senior</option>
-        </select>
-
-        <select
-          className="send-link-input"
-          name="skillA"
-          value={formData.skillA}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select Primary Skill A</option>
-          {skills.map((skill) => (
-            <option key={skill.id} value={skill.id}>
-              {skill.name}
+            <option value="833d6ee0-27f6-462f-aba3-f4df251bf47e">Junior</option>
+            <option value="2ec03951-43b3-42a6-ad36-346d9b8d4ab6">
+              Mid-Level
             </option>
-          ))}
-        </select>
+            <option value="8b5adf1a-2ec5-4094-89a8-992cee152f07">Senior</option>
+          </select>
 
-        <select
-          className="send-link-input"
-          name="skillB"
-          value={formData.skillB}
-          onChange={handleChange}
-        >
-          <option value="">Select Primary Skill B (Optional)</option>
-          {skills.map((skill) => (
-            <option key={skill.id} value={skill.id}>
-              {skill.name}
-            </option>
-          ))}
-        </select>
+          <select
+            className="send-link-input"
+            name="skillA"
+            value={formData.skillA}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select Primary Skill A</option>
+            {skills.map((skill) => (
+              <option key={skill.id} value={skill.id}>
+                {skill.name}
+              </option>
+            ))}
+          </select>
 
-        <button className="send-link-button" type="submit" disabled={loading}>
-          {loading ? "Sending..." : "Send Link"}
-        </button>
-      </form>
+          <select
+            className="send-link-input"
+            name="skillB"
+            value={formData.skillB}
+            onChange={handleChange}
+          >
+            <option value="">Select Primary Skill B (Optional)</option>
+            {skills.map((skill) => (
+              <option key={skill.id} value={skill.id}>
+                {skill.name}
+              </option>
+            ))}
+          </select>
+
+          <button className="send-link-button" type="submit" disabled={loading}>
+            {loading ? "Sending..." : "Send Link"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

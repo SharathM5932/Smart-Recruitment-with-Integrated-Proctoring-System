@@ -1,14 +1,13 @@
 .all-users-container {
-  max-width: 95vw;
-  margin: 2rem auto;
-  padding: 1.5rem;
+  width: 100%;
+  padding: 1.5em 1em;
   background-color: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-family-brooklyn);
 }
 
 .all-users-container h2 {
+  font-family: var(--font-family-brooklyn);
   margin-bottom: 1rem;
   text-align: center;
   font-size: 1.75rem;
@@ -82,8 +81,9 @@
   border-radius: 6px;
 }
 
-.title{
+.title {
   display: flex;
   justify-content: space-between;
   padding: 0 2em 0 2em;
+  font-family: var(--font-family-brooklyn);
 }

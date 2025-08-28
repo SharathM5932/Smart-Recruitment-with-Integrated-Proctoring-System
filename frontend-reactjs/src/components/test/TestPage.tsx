@@ -1,39 +1,38 @@
 // Updated TestPage.tsx using Redux Toolkit and createAsyncThunk
-import "../css/TestPage.css";
-import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { useFullScreenHandle } from "react-full-screen";
 import { useDispatch, useSelector } from "react-redux";
+import { Outlet, useNavigate, useParams } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "../css/TestPage.css";
+import MalpracticeTerminated from "./ProctorApp/MalpracticeTerminated";
 import QuestionBlock from "./QuestionBlock";
 import Sidebar from "./Sidebar";
-import MalpracticeTerminated from "./ProctorApp/MalpracticeTerminated";
-import { FullScreen, useFullScreenHandle } from "react-full-screen";
-import axios from "axios";
 
-import {
-  fetchTestData,
-  submitAnswer,
-  skipQuestion,
-  evaluateTest,
-} from "../../redux/slices/test/testThunks";
-import { type RootState } from "../../redux/store";
-import {
-  setStarted,
-  setCurrentIndex,
-  setAnswer,
-  decrementTime,
-} from "../../redux/slices/test/testSlice";
 import {
   incrementMalpractice,
   setAlertMessage,
   setIsTestCompleted,
   setIsTestStarted,
 } from "../../redux/slices/proctorSlice";
-import Navbar from "./ProctorApp/Navbar";
-import Alerts from "./ProctorApp/Alerts";
-import ProctorApp from "./ProctorApp/ProctorApp";
+import {
+  decrementTime,
+  setAnswer,
+  setCurrentIndex,
+  setStarted,
+} from "../../redux/slices/test/testSlice";
+import {
+  evaluateTest,
+  fetchTestData,
+  skipQuestion,
+  submitAnswer,
+} from "../../redux/slices/test/testThunks";
+import { type RootState } from "../../redux/store";
 import CodingPlatform from "./CodingApp/CodingPlatform";
+import Alerts from "./ProctorApp/Alerts";
+import Navbar from "./ProctorApp/Navbar";
+import ProctorApp from "./ProctorApp/ProctorApp";
 
 const formatTime = (sec: number) => {
   const m = Math.floor(sec / 60)
@@ -221,12 +220,13 @@ const TestPage = () => {
     // <FullScreen handle={handle} className="test-page">
     <>
       <Navbar />
+      <Outlet />
       <Alerts />
       <ProctorApp handleFinalSubmit={handleFinalSubmit} />
 
       <div className="coding-platform">
         {/* // Main container */}
-        <div className="main-container">
+        <div className="main-containers">
           <ToastContainer
             position="bottom-left"
             autoClose={3000}
@@ -246,17 +246,90 @@ const TestPage = () => {
               {!started && !submitted ? (
                 // Instructions
                 <div className="instructions">
-                  <h2>Instructions</h2>
+                  <div className="start-testtt">
+                    <h2>Test Instructions</h2>
+                    {verificationComplete && (
+                      <button
+                        className="submit-button str-btn"
+                        onClick={handleStartTest}
+                      >
+                        Start Test
+                      </button>
+                    )}
+                  </div>
+
+                  <h3>General Guidelines</h3>
                   <ul>
-                    <li>Do not switch tabs or exit fullscreen.</li>
-                    <li>Test auto-submits after 45 minutes.</li>
-                    <li>Each question must be answered or skipped.</li>
+                    <li>
+                      The test consists of two sections:
+                      <ul>
+                        <li>Multiple Choice Questions (MCQs)</li>
+                        <li>Coding Questions</li>
+                      </ul>
+                    </li>
+                    <li>
+                      Ensure you have a stable internet connection throughout
+                      the test.
+                    </li>
+                    <li>
+                      Do not refresh or close the browser while taking the test.
+                    </li>
+                    <li>
+                      Your activity will be monitored by the proctoring system.
+                    </li>
                   </ul>
-                  {verificationComplete && (
-                    <button className="submit-button" onClick={handleStartTest}>
-                      Start Test
-                    </button>
-                  )}
+
+                  <h3>MCQ Section</h3>
+                  <ul>
+                    <li>Each question has only one correct answer.</li>
+                    <li>
+                      You may skip questions and return to them before starting
+                      the coding section.
+                    </li>
+                    <li>
+                      Once you select an answer and click Next, you cannot
+                      revisit that question.
+                    </li>
+                    <li>
+                      Carefully review all your answers before proceeding to the
+                      coding section.
+                    </li>
+                  </ul>
+
+                  <h3>Coding Section</h3>
+                  <ul>
+                    <li>
+                      Write your code inside the provided function signature.
+                    </li>
+                    <li>
+                      Your function must return the result; do not use print
+                      statements.
+                    </li>
+                    <li>
+                      Avoid using built-in methods unless explicitly allowed.
+                    </li>
+                    <li>
+                      Ensure your code is correct, complete, and efficient
+                      before submission.
+                    </li>
+                  </ul>
+
+                  <h3>Submission Guidelines</h3>
+                  <ul>
+                    <li>
+                      Carefully review your code and ensure it meets all
+                      requirements before submitting.
+                    </li>
+                    <li>Click the Submit button to finalize your test.</li>
+                    <li>
+                      Once submitted, you will not be able to make any further
+                      changes to your code.
+                    </li>
+                    <li>
+                      After submission, the system will automatically perform
+                      proctoring cleanup and record your final submission.
+                    </li>
+                  </ul>
                 </div>
               ) : (
                 !showCodingPlatform && (
