@@ -330,6 +330,18 @@ const TestPage = () => {
                       proctoring cleanup and record your final submission.
                     </li>
                   </ul>
+
+                  <div style={{ paddingRight: "30px" }}>
+                    {verificationComplete && (
+                      <button
+                        className="submit-button str-btn"
+                        style={{ marginLeft: "400px", marginTop: "20px" }}
+                        onClick={handleStartTest}
+                      >
+                        Start Test
+                      </button>
+                    )}
+                  </div>
                 </div>
               ) : (
                 !showCodingPlatform && (

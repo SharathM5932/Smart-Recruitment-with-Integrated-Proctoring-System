@@ -23,8 +23,48 @@ export class MailerService {
       await this.transporter.sendMail({
         from: process.env.MAIL_USER,
         to: email,
-        subject: 'Your MCQ Test Link',
-        html: `<p>Click the following link to take the test:</p><a href="${link}">${link}</a>`,
+        subject:
+          'Mirafra Technologies - Online Technical Assessment (MCQ + Coding)',
+        html: `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+      <p>Dear Candidate,</p>
+
+      <p>
+        Greetings from <b>Mirafra Technologies</b>! <br/>
+        You have been shortlisted to appear for the <b>Online Technical Assessment</b>,
+        which consists of <b>MCQs</b> and <b>Coding Questions</b>.
+      </p>
+
+      <p>
+        Please note: You are required to complete this test within the next
+        <b>24 hours</b> from receiving this email.
+      </p>
+
+      <p style="margin: 20px 0; text-align: center;">
+        <a href="${link}" target="_blank"
+           style="background-color: #28a745; color: #fff; padding: 12px 24px;
+                  text-decoration: none; border-radius: 6px; display: inline-block;
+                  font-weight: bold;">
+          Click Here to Start Your Test
+        </a>
+      </p>
+
+      <p><b>Important Instructions:</b></p>
+      <ul style="margin-left: 20px;">
+        <li>Ensure you have a stable internet connection throughout the test.</li>
+        <li>Attempt the test from a quiet and disturbance-free environment.</li>
+        <li>Do not refresh or close the browser while taking the test.</li>
+        <li>Your activity will be monitored by the proctoring system.</li>
+      </ul>
+
+      <p>
+        Wishing you the best of luck!<br/>
+        <br/>
+        Regards,<br/>
+        <b>Mirafra Technologies Recruitment Team</b>
+      </p>
+    </div>
+  `,
       });
     } catch (err) {
       console.error('❌ Failed to send email:', err);

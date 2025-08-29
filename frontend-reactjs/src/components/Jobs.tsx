@@ -99,105 +99,124 @@ const Jobs: React.FC = () => {
   });
 
   return (
-    <>
-      <div className="title">
-        <h2>List of Jobs</h2>
-        <div style={{ display: "flex", gap: "10px" }}>
+    <div className="jobs-container">
+      <div className="jobs-header">
+        <div className="header-title">
+          <h2>List of Jobs</h2>
+          <span className="jobs-count">{filteredJobs.length} jobs</span>
+        </div>
+        <div className="header-actions">
           <button
-            className="question-button"
+            className="add-job-button"
             onClick={() => navigate("/add-job")}
           >
             Add Job
           </button>
-          <button className="question-button" onClick={clearFilters}>
+          <button className="clear-filters-button" onClick={clearFilters}>
             Clear Filters
           </button>
         </div>
       </div>
 
       {loading ? (
-        <p>Loading jobs...</p>
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Loading jobs...</p>
+        </div>
       ) : (
-        <div className="all-users-container">
-          <div className="table-responsive">
-            <table className="user-table">
-              <thead>
-                <tr>
-                  <th style={{ display: "flex", flexDirection: "column" }}>
-                    Title
+        <div className="table-container">
+          <table className="jobs-table">
+            <thead>
+              <tr>
+                <th>
+                  <div className="header-content">
+                    <span className="header-label">Title</span>
                     <input
                       type="text"
                       placeholder="Search title"
                       value={filters.title}
                       onChange={(e) => handleFilterChange(e, "title")}
+                      className="filter-input"
                     />
-                    {errors.title && <p className="error">{errors.title}</p>}
-                  </th>
-                  <th>
-                    Client Name
+                    {errors.title && (
+                      <span className="error-text">{errors.title}</span>
+                    )}
+                  </div>
+                </th>
+                <th>
+                  <div className="header-content">
+                    <span className="header-label">Client Name</span>
                     <input
                       type="text"
                       placeholder="Search client"
                       value={filters.clientName}
                       onChange={(e) => handleFilterChange(e, "clientName")}
+                      className="filter-input"
                     />
                     {errors.clientName && (
-                      <p className="error">{errors.clientName}</p>
+                      <span className="error-text">{errors.clientName}</span>
                     )}
-                  </th>
-                  <th>
-                    Created By
+                  </div>
+                </th>
+                <th>
+                  <div className="header-content">
+                    <span className="header-label">Created By</span>
                     <input
                       type="text"
                       placeholder="Search creator"
                       value={filters.createdBy}
                       onChange={(e) => handleFilterChange(e, "createdBy")}
+                      className="filter-input"
                     />
                     {errors.createdBy && (
-                      <p className="error">{errors.createdBy}</p>
+                      <span className="error-text">{errors.createdBy}</span>
                     )}
-                  </th>
-                  <th>
-                    Created At
+                  </div>
+                </th>
+                <th>
+                  <div className="header-content">
+                    <span className="header-label">Created At</span>
                     <input
                       type="text"
                       placeholder="Search date"
                       value={filters.createdAt}
                       onChange={(e) => handleFilterChange(e, "createdAt")}
+                      className="filter-input"
                     />
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredJobs.length > 0 ? (
-                  filteredJobs.map((job) => (
-                    <tr key={job.id}>
-                      <td>{job.title}</td>
-                      <td>{job.clientName}</td>
-                      <td>{job.createdBy}</td>
-                      <td>
-                        {new Date(job.createdAt).toLocaleString("en-IN", {
-                          timeZone: "Asia/Kolkata",
-                          day: "2-digit",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={4} style={{ textAlign: "center" }}>
-                      No jobs found
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredJobs.length > 0 ? (
+                filteredJobs.map((job) => (
+                  <tr key={job.id} className="job-row">
+                    <td className="job-title">{job.title}</td>
+                    <td className="job-client">{job.clientName}</td>
+                    <td className="job-creator">{job.createdBy}</td>
+                    <td className="job-date">
+                      {new Date(job.createdAt).toLocaleString("en-IN", {
+                        timeZone: "Asia/Kolkata",
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })}
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="empty-state">
+                    <h3>No jobs found</h3>
+                    <p>Try adjusting your filters or add a new job</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

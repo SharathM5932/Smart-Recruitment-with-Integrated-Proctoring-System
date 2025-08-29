@@ -1,227 +1,398 @@
-import { useQuery } from "@tanstack/react-query";
-import { Award, Briefcase, Calendar, Mail, Phone, User } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import "./css/Results.css";
 
-const fetchDashboardData = async () => {
+const fetchResultsData = async () => {
   const response = await fetch("http://localhost:3000/dashboard");
-  if (!response.ok) throw new Error("Network response was not ok");
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
   return response.json();
 };
 
 const Results = () => {
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState("name");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [skillFilter, setSkillFilter] = useState("all");
-  const [experienceFilter, setExperienceFilter] = useState("all");
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [filterStatus, setFilterStatus] = useState("all"); // all, selected, not-selected, completed, pending, expired, attempts-exceeded
 
-  const dialogRef = useRef(null);
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const result = await fetchResultsData();
+        setData(result);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["dashboardData"],
-    queryFn: fetchDashboardData,
-    refetchInterval: 30000,
-  });
-
-  const candidates = data?.data || [];
-
-  // helpers
-  const getTestStatus = (candidate) => {
-    const testAttempt = candidate.test_attempts[0];
-    if (!testAttempt) return "pending";
-    return testAttempt.test_status;
-  };
-
-  const getCodingStats = (candidate) => {
-    if (candidate.submissions.length === 0) {
-      return { passed: 0, total: 0, status: "Not Attempted" };
-    }
-    const submission = candidate.submissions[0];
-    if (!submission.testResults) {
-      return { passed: 0, total: 0, status: submission.status };
-    }
-    const passed = submission.testResults.filter((t) => t.passed).length;
-    const total = submission.testResults.length;
-    return { passed, total, status: submission.status };
-  };
-
-  const getSelectionStatus = (candidate) => {
-    const mcqScore = candidate.test_attempts[0]?.mcq_score || 0;
-    const hasPassedCoding = candidate.submissions.some(
-      (s) => s.status === "Passed"
-    );
-    return mcqScore > 20 && hasPassedCoding ? "selected" : "not-selected";
-  };
+    loadData();
+  }, []);
 
   const filteredAndSortedCandidates = useMemo(() => {
-    let filtered = candidates.filter((c) => {
-      const matchesSearch =
-        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.email.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus =
-        statusFilter === "all" ||
-        getTestStatus(c) === statusFilter ||
-        getSelectionStatus(c) === statusFilter;
-      const matchesSkill =
-        skillFilter === "all" || c.primary_skill?.name === skillFilter;
-      const matchesExperience =
-        experienceFilter === "all" ||
-        c.experience_level?.name === experienceFilter;
-      return (
-        matchesSearch && matchesStatus && matchesSkill && matchesExperience
-      );
-    });
+    if (!data?.data) return [];
 
+    const candidates = data.data;
+    const currentTime = new Date();
+
+    // Helper functions from Dashboard logic
+    const isTestExpired = (candidate) => {
+      const token = candidate.test_attempts[0]?.test_access_tokens[0];
+      const testAttempt = candidate.test_attempts[0];
+      if (!token || !testAttempt) return false;
+      const expiresAt = new Date(token.expires_at);
+      return expiresAt < currentTime && testAttempt.is_submitted === false;
+    };
+
+    const isAttemptsExceeded = (candidate) => {
+      const testAttempt = candidate.test_attempts[0];
+      if (!testAttempt) return false;
+      return (
+        testAttempt.attempt_count >= 3 && testAttempt.is_submitted === false
+      );
+    };
+
+    const getTestStatus = (candidate) => {
+      const testAttempt = candidate.test_attempts[0];
+      if (!testAttempt) return "pending";
+
+      if (isAttemptsExceeded(candidate)) {
+        return "attempts-exceeded";
+      } else if (isTestExpired(candidate)) {
+        return "expired";
+      } else if (
+        testAttempt.test_status === "pending" &&
+        testAttempt.is_submitted === false
+      ) {
+        return "pending";
+      } else if (testAttempt.test_status === "attending") {
+        return "attending";
+      } else if (testAttempt.test_status === "completed") {
+        return "completed";
+      } else {
+        return "pending";
+      }
+    };
+
+    const getCodingStatus = (candidate) => {
+      if (candidate.submissions.length > 0) {
+        return candidate.submissions.some((sub) => sub.status === "Passed")
+          ? "Passed"
+          : "Failed";
+      }
+      return "Not Attempted";
+    };
+
+    const isSelected = (candidate) => {
+      const mcqScore = candidate.test_attempts[0]?.mcq_score || 0;
+      const hasPassedCoding = candidate.submissions.some(
+        (sub) => sub.status === "Passed"
+      );
+      return mcqScore > 20 && hasPassedCoding;
+    };
+
+    // Filter by search term
+    let filtered = candidates.filter(
+      (candidate) =>
+        candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        candidate.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Filter by status
+    if (filterStatus !== "all") {
+      filtered = filtered.filter((candidate) => {
+        switch (filterStatus) {
+          case "selected":
+            return isSelected(candidate);
+          case "not-selected":
+            return !isSelected(candidate);
+          case "completed":
+            return getTestStatus(candidate) === "completed";
+          case "pending":
+            return getTestStatus(candidate) === "pending";
+          case "expired":
+            return getTestStatus(candidate) === "expired";
+          case "attempts-exceeded":
+            return getTestStatus(candidate) === "attempts-exceeded";
+          case "attending":
+            return getTestStatus(candidate) === "attending";
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Sort candidates
     return filtered.sort((a, b) => {
-      let aValue, bValue;
       switch (sortKey) {
         case "name":
-          aValue = a.name.toLowerCase();
-          bValue = b.name.toLowerCase();
-          break;
+          return a.name.localeCompare(b.name);
+        case "email":
+          return a.email.localeCompare(b.email);
         case "mcq":
-          aValue = a.test_attempts[0]?.mcq_score || 0;
-          bValue = b.test_attempts[0]?.mcq_score || 0;
-          break;
+          const aMcq = a.test_attempts[0]?.mcq_score || 0;
+          const bMcq = b.test_attempts[0]?.mcq_score || 0;
+          return bMcq - aMcq;
         case "coding":
-          aValue = getCodingStats(a).passed;
-          bValue = getCodingStats(b).passed;
-          break;
-        case "status":
-          aValue = getTestStatus(a);
-          bValue = getTestStatus(b);
-          break;
-        case "completed":
-          aValue = new Date(a.test_attempts[0]?.applicant_completed_at || 0);
-          bValue = new Date(b.test_attempts[0]?.applicant_completed_at || 0);
-          break;
+          const aPassedTests =
+            a.submissions.length > 0
+              ? a.submissions[0].testResults?.filter((tr) => tr.passed)
+                  .length || 0
+              : 0;
+          const bPassedTests =
+            b.submissions.length > 0
+              ? b.submissions[0].testResults?.filter((tr) => tr.passed)
+                  .length || 0
+              : 0;
+          return bPassedTests - aPassedTests;
+        case "skill":
+          const aSkill = a.primary_skill?.name || "";
+          const bSkill = b.primary_skill?.name || "";
+          return aSkill.localeCompare(bSkill);
+        case "experience":
+          const aExp = a.experience_level?.name || "";
+          const bExp = b.experience_level?.name || "";
+          return aExp.localeCompare(bExp);
         default:
           return 0;
       }
-      if (typeof aValue === "string") {
-        const comp = aValue.localeCompare(bValue);
-        return sortOrder === "asc" ? comp : -comp;
-      }
-      return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
     });
-  }, [
-    candidates,
-    searchTerm,
-    sortKey,
-    sortOrder,
-    statusFilter,
-    skillFilter,
-    experienceFilter,
-  ]);
+  }, [data, searchTerm, sortKey, filterStatus]);
 
-  const handleSort = (key) => {
-    if (sortKey === key) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortKey(key);
-      setSortOrder("asc");
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="results-loading">
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <span>Loading results...</span>
+        </div>
+      </div>
+    );
+  }
 
-  const formatDate = (dateString) =>
-    !dateString
-      ? "N/A"
-      : new Date(dateString).toLocaleDateString() +
-        " " +
-        new Date(dateString).toLocaleTimeString();
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading results</div>;
+  if (error) {
+    return (
+      <div className="results-error">
+        <div className="error-content">
+          <h3>Error loading results</h3>
+          <p>{error.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="results">
-      <div className="results-container">
+    <div className="results-container">
+      <div className="results-header">
         <h1>Candidate Assessment Results</h1>
+        <p>Detailed view of all candidate assessments</p>
+        <p>
+          Showing {filteredAndSortedCandidates.length} of{" "}
+          {data?.data?.length || 0} candidates
+        </p>
+      </div>
 
-        <div className="results-table-container">
-          <table className="results-table">
-            <thead>
-              <tr>
-                <th onClick={() => handleSort("name")}>Name</th>
-                <th>Email</th>
-                <th>MCQ Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAndSortedCandidates.map((candidate) => (
-                <tr key={candidate.id}>
-                  <td
-                    className="clickable-name"
-                    onClick={() => {
-                      setSelectedCandidate(candidate);
-                      dialogRef.current.showModal();
-                    }}
-                  >
-                    <User size={16} /> {candidate.name}
-                  </td>
-                  <td>{candidate.email}</td>
-                  <td>{candidate.test_attempts[0]?.mcq_score || "N/A"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="results-controls">
+        <div className="search-control">
+          <input
+            type="text"
+            placeholder="Search by name or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
+
+        <div className="filter-controls">
+          <select
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value)}
+            className="sort-select"
+          >
+            <option value="name">Sort by Name</option>
+            <option value="email">Sort by Email</option>
+            <option value="mcq">Sort by MCQ Score</option>
+            <option value="coding">Sort by Coding Tests</option>
+            <option value="skill">Sort by Skill</option>
+            <option value="experience">Sort by Experience</option>
+          </select>
+
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">All Candidates</option>
+            <option value="selected">Selected</option>
+            <option value="not-selected">Not Selected</option>
+            <option value="completed">Completed Tests</option>
+            <option value="pending">Pending Tests</option>
+            <option value="attending">In Progress</option>
+            <option value="expired">Expired Tests</option>
+            <option value="attempts-exceeded">Attempts Exceeded</option>
+          </select>
         </div>
       </div>
 
-      {/* Modal */}
-      <dialog
-        id="candidate-modal"
-        ref={dialogRef}
-        onClick={(e) => {
-          const rect = dialogRef.current.getBoundingClientRect();
-          const isInside =
-            e.clientX >= rect.left &&
-            e.clientX <= rect.right &&
-            e.clientY >= rect.top &&
-            e.clientY <= rect.bottom;
-          if (!isInside) dialogRef.current.close();
-        }}
-      >
-        {selectedCandidate && (
-          <div className="modal-content">
-            <h2>{selectedCandidate.name}</h2>
-            <p>
-              <Mail size={14} /> {selectedCandidate.email}
-            </p>
-            <p>
-              <Phone size={14} /> {selectedCandidate.phone}
-            </p>
-            <p>
-              <Award size={14} /> Primary:{" "}
-              {selectedCandidate.primary_skill?.name || "N/A"}
-            </p>
-            {selectedCandidate.secondary_skill && (
-              <p>
-                <Award size={14} /> Secondary:{" "}
-                {selectedCandidate.secondary_skill?.name}
-              </p>
-            )}
-            <p>
-              <Briefcase size={14} /> Experience:{" "}
-              {selectedCandidate.experience_level?.name || "N/A"}
-            </p>
-            <p>
-              <Calendar size={14} /> Scheduled:{" "}
-              {formatDate(selectedCandidate.test_attempts[0]?.schedule_start)}
-            </p>
+      <div className="results-table-responsive">
+        <table className="results-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Skill</th>
+              <th>Experience</th>
+              <th>MCQ Score</th>
+              <th>Coding Test Cases</th>
+              <th>Test Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredAndSortedCandidates.map((candidate) => {
+              const mcqScore = candidate.test_attempts[0]?.mcq_score || 0;
+              const totalMcqQuestions = 30; // Based on dashboard logic
 
-            <button
-              className="btn-close"
-              onClick={() => dialogRef.current.close()}
-            >
-              Close
-            </button>
-          </div>
-        )}
-      </dialog>
+              const codingSubmission = candidate.submissions[0];
+              const passedTests =
+                codingSubmission?.testResults?.filter((tr) => tr.passed)
+                  .length || 0;
+              const totalTests = codingSubmission?.testResults?.length || 0;
+
+              const codingStatus =
+                candidate.submissions.length > 0
+                  ? candidate.submissions.some((sub) => sub.status === "Passed")
+                    ? "Passed"
+                    : "Failed"
+                  : "Not Attempted";
+
+              // Get test status using dashboard logic
+              const currentTime = new Date();
+              const testAttempt = candidate.test_attempts[0];
+              let testStatus = "pending";
+
+              if (testAttempt) {
+                const token = testAttempt.test_access_tokens[0];
+                const isExpired =
+                  token &&
+                  new Date(token.expires_at) < currentTime &&
+                  !testAttempt.is_submitted;
+                const isAttemptsExceeded =
+                  testAttempt.attempt_count >= 3 && !testAttempt.is_submitted;
+
+                if (isAttemptsExceeded) {
+                  testStatus = "attempts-exceeded";
+                } else if (isExpired) {
+                  testStatus = "expired";
+                } else if (testAttempt.test_status === "attending") {
+                  testStatus = "attending";
+                } else if (testAttempt.test_status === "completed") {
+                  testStatus = "completed";
+                } else {
+                  testStatus = "pending";
+                }
+              }
+
+              return (
+                <tr key={candidate.id}>
+                  {/* <td className="candidate-name">{candidate.name}</td> */}
+                  <td>
+                    <Link
+                      to={`/applicant-info/${candidate.id}`}
+                      className="candidate-name-link"
+                      state={{ candidate }}
+                    >
+                      {candidate.name}
+                    </Link>
+                  </td>
+
+                  <td className="candidate-email">{candidate.email}</td>
+                  <td className="skill-name">
+                    {candidate.primary_skill?.name || "N/A"}
+                  </td>
+                  <td className="experience-name">
+                    {candidate.experience_level?.name || "N/A"}
+                  </td>
+                  <td>
+                    <span
+                      className={`score-badge ${
+                        mcqScore > 20 ? "score-pass" : "score-fail"
+                      }`}
+                    >
+                      {mcqScore}/{totalMcqQuestions}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={`score-badge ${
+                        passedTests > 0
+                          ? "score-pass"
+                          : totalTests > 0
+                          ? "score-fail"
+                          : "score-pending"
+                      }`}
+                    >
+                      {passedTests}/{totalTests}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={`status-badge ${
+                        testStatus === "completed"
+                          ? "status-complete"
+                          : testStatus === "attending"
+                          ? "status-progress"
+                          : testStatus === "attempts-exceeded"
+                          ? "status-attempts-exceeded"
+                          : testStatus === "expired"
+                          ? "status-expired"
+                          : "status-pending"
+                      }`}
+                    >
+                      {testStatus === "attempts-exceeded"
+                        ? "attempts exceeded"
+                        : testStatus}
+                    </span>
+                  </td>
+                  <td className="results-actions">
+                    <Link
+                      to={`/results/mcq/${candidate.id}`}
+                      className="action-link"
+                    >
+                      <abbr title="View MCQ Result">MCQ</abbr>
+                    </Link>
+                    <Link
+                      to={`/results/coding/${candidate.id}`}
+                      className="action-link"
+                    >
+                      <abbr title="View Coding Result">Coding</abbr>
+                    </Link>
+                    <Link
+                      to={`/results/malpractice/${candidate.id}`}
+                      className="action-link"
+                    >
+                      <abbr title="View Malpractice Images or Candidate Images">
+                        Images
+                      </abbr>
+                    </Link>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {filteredAndSortedCandidates.length === 0 && (
+        <div className="no-results">
+          <p>No candidates found matching your criteria.</p>
+        </div>
+      )}
     </div>
   );
 };

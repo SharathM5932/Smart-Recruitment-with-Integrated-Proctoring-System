@@ -11,12 +11,14 @@ import AddMCQ from "./components/AddMCQ";
 import AddQuestions from "./components/AddQuestions";
 import AddUsers from "./components/AddUsers";
 import AllUsers from "./components/AllUsers";
+import ApplicantDetails from "./components/ApplicantDetails";
 import CodingResult from "./components/CodingResult";
 import Footer from "./components/Footer";
 import Home from "./components/Home";
 import Jobs from "./components/Jobs";
 import Login from "./components/Login";
 import Logout from "./components/Logout";
+import MalpracticeImages from "./components/MalpracticeImages";
 import McqResult from "./components/McqResult";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -212,6 +214,34 @@ function App() {
                           ]}
                         >
                           <CodingResult />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/applicant-info/:id"
+                      element={
+                        <ProtectedRoute
+                          allowedRoles={[
+                            "super admin",
+                            "manager",
+                            "talent acquisition",
+                          ]}
+                        >
+                          <ApplicantDetails />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/results/malpractice/:id"
+                      element={
+                        <ProtectedRoute
+                          allowedRoles={[
+                            "super admin",
+                            "manager",
+                            "talent acquisition",
+                          ]}
+                        >
+                          <MalpracticeImages />
                         </ProtectedRoute>
                       }
                     />

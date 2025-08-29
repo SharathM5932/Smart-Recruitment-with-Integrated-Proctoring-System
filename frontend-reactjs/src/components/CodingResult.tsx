@@ -52,6 +52,9 @@ const CodingResultPage = () => {
 
   return (
     <div className="coding-result-container">
+      <div className="coding-result-header">
+        <h2>Coding Result</h2>
+      </div>
       {codingResults.map((result) => (
         <div className="coding-card" key={result.submissionId}>
           <h2 className="coding-problem-title">

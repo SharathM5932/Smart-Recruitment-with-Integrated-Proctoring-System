@@ -330,6 +330,12 @@
   color: #166534;
 }
 
+.status-attempts-exceeded {
+  text-transform: capitalize;
+  background-color: rgb(240, 213, 163);
+  color: #654916;
+}
+
 .status-progress {
   text-transform: capitalize;
   background-color: #fef3c7;

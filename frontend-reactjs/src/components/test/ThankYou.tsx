@@ -1,12 +1,20 @@
 import React from "react";
+import logo from "../../assets/mirafraLogo.svg";
+
 import "../css/ThankYou.css";
 
 const ThankYou: React.FC = () => {
   return (
     <div className="thank-you-container">
       <div className="thank-you-card">
-        <h1>✅ Test Submitted Successfully</h1>
-        <p>You can close the browser safely.</p>
+        <div className="success-icon">
+          <img src={logo} alt="logo" />
+        </div>
+        <h1>Test Completed Successfully!</h1>
+        <p>Your test has been submitted and saved securely.</p>
+        <p className="instruction">
+          You can now safely close this browser window.
+        </p>
       </div>
     </div>
   );

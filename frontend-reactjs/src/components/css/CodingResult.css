@@ -1,28 +1,37 @@
 .coding-result-container {
   max-width: 95vw;
-  margin: 2rem auto;
-  padding: 1.5rem;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 1rem auto;
+  /* padding: 1.5rem; */
+  font-family: var(--font-family-brooklyn);
+}
+
+.coding-result-header h2 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+  padding-bottom: 10px;
 }
 
 .coding-card {
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 2rem;
-  background-color: #ffffff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.2s;
-}
-
-.coding-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: var(--main-bg-color);
 }
 
 .coding-problem-title {
   font-size: 1.25rem;
   margin-bottom: 0.5rem;
   color: #1f2937;
+}
+
+.coding-card h3 {
+  padding: 0;
 }
 
 .coding-applicant,
@@ -52,7 +61,7 @@
 .coding-test-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
+  /* margin-top: 1rem; */
 }
 
 .coding-test-table th {

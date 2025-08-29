@@ -1,12 +1,5 @@
 import axios from "axios";
-import {
-  ChevronDown,
-  ChevronUp,
-  Filter,
-  RefreshCw,
-  Search,
-  X,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, Filter, RefreshCw, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import "../components/css/AllUsers.css";
 
@@ -146,7 +139,7 @@ const AllUsers: React.FC = () => {
 
         <div className="header-actions">
           <div className="search-container">
-            <Search size={18} className="search-icon" />
+            {/* <Search size={18} className="search-icon" /> */}
             <input
               type="text"
               placeholder="Search users..."
@@ -170,47 +163,41 @@ const AllUsers: React.FC = () => {
         <table className="users-table">
           <thead>
             <tr>
-              <th
-                className="sortable-header"
-                onClick={() => handleSort("name")}
-              >
-                <span>Name</span>
-                {getSortIcon("name")}
+              <th onClick={() => handleSort("name")}>
+                <div className="sortable-header">
+                  <span>Name</span>
+                  {getSortIcon("name")}
+                </div>
               </th>
-              <th
-                className="sortable-header"
-                onClick={() => handleSort("email")}
-              >
-                <span>Email</span>
-                {getSortIcon("email")}
+              <th onClick={() => handleSort("email")}>
+                <div className="sortable-header">
+                  <span>Email</span>
+                  {getSortIcon("email")}
+                </div>
               </th>
-              <th
-                className="sortable-header"
-                onClick={() => handleSort("phone")}
-              >
-                <span>Phone</span>
-                {getSortIcon("phone")}
+              <th onClick={() => handleSort("phone")}>
+                <div className="sortable-header">
+                  <span>Phone</span>
+                  {getSortIcon("phone")}
+                </div>
               </th>
-              <th
-                className="sortable-header"
-                onClick={() => handleSort("role")}
-              >
-                <span>Role</span>
-                {getSortIcon("role")}
+              <th onClick={() => handleSort("role")}>
+                <div className="sortable-header">
+                  <span>Role</span>
+                  {getSortIcon("role")}
+                </div>
               </th>
-              <th
-                className="sortable-header"
-                onClick={() => handleSort("status")}
-              >
-                <span>Status</span>
-                {getSortIcon("status")}
+              <th onClick={() => handleSort("status")}>
+                <div className="sortable-header">
+                  <span>Status</span>
+                  {getSortIcon("status")}
+                </div>
               </th>
-              <th
-                className="sortable-header"
-                onClick={() => handleSort("createdAt")}
-              >
-                <span>Created At</span>
-                {getSortIcon("createdAt")}
+              <th onClick={() => handleSort("createdAt")}>
+                <div className="sortable-header">
+                  <span>Created At</span>
+                  {getSortIcon("createdAt")}
+                </div>
               </th>
             </tr>
           </thead>

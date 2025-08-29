@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import {
+  AlertTriangle,
   BarChart3,
   CheckCircle,
   Clock,
@@ -7,8 +7,7 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -34,12 +33,27 @@ const fetchDashboardData = async () => {
 const Dashboard = () => {
   const [skillsFilter, setSkillsFilter] = useState("all"); // all, selected, not-selected
   const [experienceFilter, setExperienceFilter] = useState("all"); // all, selected, not-selected
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["dashboardData"],
-    queryFn: fetchDashboardData,
-    refetchInterval: 30000,
-  });
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const result = await fetchDashboardData();
+        setData(result);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (isLoading) {
     return (
@@ -99,6 +113,14 @@ const Dashboard = () => {
     return expiresAt < currentTime && testAttempt.is_submitted === false;
   };
 
+  // Helper function to check if attempts are exceeded
+  const isAttemptsExceeded = (candidate) => {
+    const testAttempt = candidate.test_attempts[0];
+    if (!testAttempt) return false;
+
+    return testAttempt.attempt_count >= 3 && testAttempt.is_submitted === false;
+  };
+
   // Categorize candidates based on test status with proper logic
   const testStatusCounts = candidates.reduce((acc, candidate) => {
     const testAttempt = candidate.test_attempts[0];
@@ -107,10 +129,16 @@ const Dashboard = () => {
       return acc;
     }
 
-    // Check if test is expired first
-    if (isTestExpired(candidate)) {
+    // Check attempts exceeded first (highest priority)
+    if (isAttemptsExceeded(candidate)) {
+      acc.attemptsExceeded = (acc.attemptsExceeded || 0) + 1;
+    }
+    // Then check if test is expired (but not if attempts exceeded)
+    else if (isTestExpired(candidate)) {
       acc.expired = (acc.expired || 0) + 1;
-    } else if (
+    }
+    // Then check other statuses
+    else if (
       testAttempt.test_status === "pending" &&
       testAttempt.is_submitted === false
     ) {
@@ -127,7 +155,8 @@ const Dashboard = () => {
     return acc;
   }, {});
 
-  // Expired tests count
+  // Get individual counts
+  const attemptsExceededTests = testStatusCounts.attemptsExceeded || 0;
   const expiredTests = testStatusCounts.expired || 0;
 
   // Skills distribution with filter (for charts)
@@ -203,7 +232,7 @@ const Dashboard = () => {
   }) => (
     <div className="metric-card">
       {linkTo ? (
-        <Link to={linkTo} className="metric-link">
+        <div className="metric-link" style={{ cursor: "pointer" }}>
           <div className="metric-content">
             <div className="metric-info">
               <p className="metric-title">{title}</p>
@@ -216,7 +245,7 @@ const Dashboard = () => {
             </div>
             <Icon className="metric-icon" style={{ color }} />
           </div>
-        </Link>
+        </div>
       ) : (
         <div className="metric-content">
           <div className="metric-info">
@@ -244,10 +273,10 @@ const Dashboard = () => {
               style={{
                 padding: "0.25rem 0.5rem",
                 borderRadius: "0.25rem",
-                border: "1px solid var(--border-color)",
+                border: "1px solid #ccc",
                 fontSize: "0.875rem",
-                backgroundColor: "var(--main-bg-color)",
-                color: "var(--text-color)",
+                backgroundColor: "#fff",
+                color: "#333",
               }}
             >
               <option value="all">All Candidates</option>
@@ -257,10 +286,19 @@ const Dashboard = () => {
           )}
         </div>
         {linkTo && (
-          <Link to={linkTo} className="view-details-link">
+          <div
+            className="view-details-link"
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              color: "#3B82F6",
+            }}
+          >
             <BarChart3 size={16} />
             View Details
-          </Link>
+          </div>
         )}
       </div>
       <div className="chart-content">{children}</div>
@@ -302,6 +340,14 @@ const Dashboard = () => {
             description="MCQ <= 20 OR Coding Failed/Not Attempted"
             linkTo="/results"
           />
+          <MetricCard
+            title="Completed Tests"
+            value={testStatusCounts.completed || 0}
+            icon={CheckCircle}
+            color="#10B981"
+            description="Assessment finished"
+            linkTo="/results"
+          />
         </div>
 
         {/* Test Status Overview - NO LIMITS, shows ALL candidates */}
@@ -322,12 +368,13 @@ const Dashboard = () => {
             description="Currently taking test"
             linkTo="/results"
           />
+
           <MetricCard
-            title="Completed Tests"
-            value={testStatusCounts.completed || 0}
-            icon={CheckCircle}
-            color="#10B981"
-            description="Assessment finished"
+            title="Attempts Exceeded"
+            value={attemptsExceededTests}
+            icon={AlertTriangle}
+            color="#F97316"
+            description="Maximum attempts reached (3)"
             linkTo="/results"
           />
           <MetricCard
@@ -395,9 +442,12 @@ const Dashboard = () => {
         <div className="recent-candidates">
           <div className="section-header">
             <h3>Recent Test Results (Last 5)</h3>
-            <Link to="/results" className="view-all-link">
+            <div
+              className="view-all-link"
+              style={{ cursor: "pointer", color: "#3B82F6" }}
+            >
               View All
-            </Link>
+            </div>
           </div>
           <div className="candidates-table">
             <table>
@@ -423,10 +473,16 @@ const Dashboard = () => {
                         : "Failed"
                       : "Not Attempted";
 
-                  // Determine actual test status (including expired)
+                  // Determine actual test status (including attempts exceeded and expired)
                   let testStatus =
                     candidate.test_attempts[0]?.test_status || "pending";
-                  if (isTestExpired(candidate)) {
+
+                  // Check attempts exceeded first (highest priority)
+                  if (isAttemptsExceeded(candidate)) {
+                    testStatus = "attempts-exceeded";
+                  }
+                  // Then check expired
+                  else if (isTestExpired(candidate)) {
                     testStatus = "expired";
                   }
 
@@ -465,12 +521,16 @@ const Dashboard = () => {
                               ? "status-complete"
                               : testStatus === "attending"
                               ? "status-progress"
+                              : testStatus === "attempts-exceeded"
+                              ? "status-attempts-exceeded"
                               : testStatus === "expired"
                               ? "status-expired"
                               : "status-pending"
                           }`}
                         >
-                          {testStatus}
+                          {testStatus === "attempts-exceeded"
+                            ? "attempts exceeded"
+                            : testStatus}
                         </span>
                       </td>
                       <td>{candidate.experience_level?.name || "N/A"}</td>

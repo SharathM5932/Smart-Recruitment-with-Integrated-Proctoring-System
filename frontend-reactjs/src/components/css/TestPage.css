@@ -117,6 +117,10 @@ body {
   margin-bottom: 70px;
 }
 
+.btn-adjustment {
+  margin-bottom: 100px;
+}
+
 .submit-button,
 .skip-button {
   background-color: #2b6cb0;
@@ -243,6 +247,7 @@ body {
   /* text-align: center; */
   font-size: 0.9rem;
 }
+
 .instructions h2 {
   font-size: 22px;
   color: #2d3748;
@@ -292,4 +297,8 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.bottom-test {
+  margin: 10px;
 }

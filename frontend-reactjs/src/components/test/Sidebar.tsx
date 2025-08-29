@@ -79,6 +79,7 @@ const Sidebar = ({
             </div>
           );
         })}
+        <div></div>
       </div>
 
       {/* {questions.length > 0 &&
@@ -93,19 +94,38 @@ const Sidebar = ({
         )} */}
 
       {questions.length > 0 &&
-        questions.every(
-          (q) => q.status === "answered" || q.status === "skipped"
-        ) && (
-          <div className="coding-next">
-            <button
-              className="submit-button"
-              style={{ marginTop: "20px" }}
-              onClick={onStartCodingTest}
-            >
-              <>Coding Test</>
-            </button>
-          </div>
-        )}
+      questions.every(
+        (q) => q.status === "answered" || q.status === "skipped"
+      ) ? (
+        <div className="coding-next">
+          <button
+            className="submit-button"
+            style={{ marginTop: "20px" }}
+            onClick={onStartCodingTest}
+          >
+            <>Coding Test</>
+          </button>
+        </div>
+      ) : (
+        <div>
+          {questions.length > 0 &&
+          questions.every(
+            (q) => q.status === "answered" || q.status === "skipped"
+          ) ? (
+            <div className="coding-next">
+              <button
+                className="submit-button"
+                style={{ marginTop: "20px" }}
+                onClick={onStartCodingTest}
+              >
+                <>Coding Test</>
+              </button>
+            </div>
+          ) : (
+            <div className="btn-adjustment"></div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
