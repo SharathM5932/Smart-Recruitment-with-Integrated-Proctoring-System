@@ -548,6 +548,8 @@ List<string> ${name} = line${uniqueSuffix}
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+
 
 public class MainClass {
     // ${signature}

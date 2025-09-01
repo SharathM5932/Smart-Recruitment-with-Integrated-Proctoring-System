@@ -133,10 +133,10 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit }) => {
     })
       .then((res) => res.json())
       .then(() => handleFinalSubmit())
-      .then(() => alert("Are you sure you want to submit the test?"))
       .then(() => navigate("/thank-you"))
       .catch(console.error);
   };
+  //   .then(() => alert("Are you sure you want to submit the test?"))
 
   if (loading) return <p className="loading">Loading question...</p>;
 

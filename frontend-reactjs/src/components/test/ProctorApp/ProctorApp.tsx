@@ -72,7 +72,7 @@ const ProctorApp: React.FC<MyComponentProps> = ({ handleFinalSubmit }) => {
       <div className="main-content">
         {isTestStarted && !isTestCompleted && (
           <div className="violation-count">
-            Violations: {malpracticeCount}/30
+            Violations: {malpracticeCount}/ 7
           </div>
         )}
         <WebcamCapture

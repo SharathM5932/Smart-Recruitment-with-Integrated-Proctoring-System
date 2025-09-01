@@ -1,16 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
-import Webcam from "react-webcam";
 import axios, { type AxiosResponse } from "axios";
-import "./WebcamCapture.css";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import Webcam from "react-webcam";
 import { type RootState } from "../../../redux/store";
+import "./WebcamCapture.css";
 
 import {
   setAlertMessage,
   setCapturedImage,
-  setIsTestCompleted,
 } from "../../../redux/slices/proctorSlice";
-import MalpracticeTerminated from "./MalpracticeTerminated";
 
 interface WebcamCaptureProps {
   onMalpracticeDetected: (message: string) => void;
