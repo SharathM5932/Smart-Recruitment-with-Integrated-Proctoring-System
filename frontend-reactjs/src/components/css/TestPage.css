@@ -11,6 +11,13 @@ body {
   color: #2d3748;
 } */
 
+.test-page {
+  background-color: var(--main-bg-color);
+  overflow-y: auto !important; /* allow vertical scrolling */
+  overflow-x: hidden; /* optional, block horizontal scroll */
+  height: 100%;
+}
+
 .web-inst {
   display: flex;
   flex-wrap: nowrap;

@@ -1,15 +1,13 @@
 .clean-team-container {
-  background-color: #f4fdf7;
-  /* padding: 3rem 1rem; */
   text-align: center;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: var(--font-family-brooklyn);
 }
 
 .clean-team-title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 600;
-  color: #1f2937; /* dark gray */
-  margin-bottom: 3rem;
+  color: var(--subheader-color);
+  padding-bottom: 1rem;
 }
 
 .clean-team-grid {
@@ -20,10 +18,17 @@
 }
 
 .clean-team-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   width: 220px;
   background: transparent;
-  padding: 1rem;
   transition: transform 0.3s ease;
+}
+
+.dev_name {
+  padding-bottom: 0.5em;
 }
 
 .clean-team-card:hover {
@@ -49,7 +54,6 @@
 .clean-team-card h3 {
   font-size: 1.1rem;
   font-weight: 600;
-  margin: 0.5rem 0;
   color: #111827;
 }
 

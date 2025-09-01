@@ -4,17 +4,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { ApplicantQuestion } from './entities/applicant_questions.entity';
 import { ApplicantAnswer } from 'src/applicants/entities/applicant-answer.entity';
-import { Option } from 'src/question-bank/entities/option.entity';
-import { TestAttempt } from 'src/evaluation/entities/test-attempt.entity';
-import { TestAccessToken } from 'src/evaluation/entities/test-access-token.entity';
-import { EvaluationService } from 'src/evaluation/evaluation.service';
-import { McqQuestion } from 'src/question-bank/entities/question.entity';
 import { Applicant } from 'src/evaluation/entities/applicants.entity';
+import { TestAccessToken } from 'src/evaluation/entities/test-access-token.entity';
+import { TestAttempt } from 'src/evaluation/entities/test-attempt.entity';
+import { EvaluationService } from 'src/evaluation/evaluation.service';
 import { Problem } from 'src/problem/entities/problem.entity';
+import { Option } from 'src/question-bank/entities/option.entity';
+import { McqQuestion } from 'src/question-bank/entities/question.entity';
+import { Repository } from 'typeorm';
 import { ApplicantProblem } from './entities/applicant_problem.entity';
+import { ApplicantQuestion } from './entities/applicant_questions.entity';
 
 @Injectable()
 export class ApplicantQuestionService {
@@ -530,7 +530,7 @@ export class ApplicantQuestionService {
     }
 
     const experienceYears = applicant.experience_level?.max_year ?? 0;
-    console.log('experienceYears', experienceYears);
+
     let difficulty: 'easy' | 'medium' | 'hard';
     if (experienceYears <= 2) difficulty = 'easy';
     else if (experienceYears <= 5) difficulty = 'medium';
@@ -553,13 +553,11 @@ export class ApplicantQuestionService {
       id: attemptId,
     });
     // const problem = await this.problemRepo.findOneByOrFail({ id: selected.id });
-    console.log('attempt', attempt, selected, applicant);
     const applicantProblem = this.apRepo.create({
       applicant,
       test_attempt: attempt,
       problem: selected,
     });
-    console.log('applicantQuestion', applicantProblem);
     await this.apRepo.save(applicantProblem);
 
     return {
@@ -589,7 +587,6 @@ export class ApplicantQuestionService {
         'problem.testCases',
       ],
     });
-    console.log('record', record);
 
     if (!record || !record.problem) {
       throw new NotFoundException(
@@ -599,11 +596,6 @@ export class ApplicantQuestionService {
 
     const problem = record.problem;
 
-    // Debug logs
-    console.log('Fetched functionSignatures:', problem.functionSignatures);
-    console.log('Fetched functionNames:', problem.functionNames);
-    console.log('Selected languageId:', languageId);
-
     const selectedSignature = problem.functionSignatures.find(
       (fs) => fs.language && fs.language.id === String(languageId),
     );
@@ -611,9 +603,6 @@ export class ApplicantQuestionService {
     const selectedFunctionName = problem.functionNames.find(
       (fn) => fn.language && fn.language.id === String(languageId),
     );
-
-    console.log('Selected signature:', selectedSignature?.signature);
-    console.log('Selected function name:', selectedFunctionName?.name);
 
     return {
       problemKey: problem.key,

@@ -1,26 +1,21 @@
 // Updated TestPage.tsx using Redux Toolkit and createAsyncThunk
 import { useEffect, useState } from "react";
-import { useFullScreenHandle } from "react-full-screen";
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { setIsTestStarted } from "../../redux/slices/proctorSlice";
 import "../css/TestPage.css";
-import MalpracticeTerminated from "./ProctorApp/MalpracticeTerminated";
 import QuestionBlock from "./QuestionBlock";
 import Sidebar from "./Sidebar";
 
-import {
-  incrementMalpractice,
-  setAlertMessage,
-  setIsTestCompleted,
-  setIsTestStarted,
-} from "../../redux/slices/proctorSlice";
 import {
   decrementTime,
   setAnswer,
   setCurrentIndex,
   setStarted,
+  setTimeLeft,
 } from "../../redux/slices/test/testSlice";
 import {
   evaluateTest,
@@ -52,7 +47,6 @@ const TestPage = () => {
     localStorage.setItem("applicantId", applicantId.toString());
     localStorage.setItem("attemptId", attemptId.toString());
   }
-  //   console.log("Applicant ID:", applicantId, "Attempt ID:", attemptId);
 
   const dispatch = useDispatch<any>();
   const handle = useFullScreenHandle();
@@ -71,66 +65,60 @@ const TestPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (submitted) {
-      navigate("/thank-you");
-    }
-    const saved = localStorage.getItem(`timer-${attemptId}`);
-    if (saved) {
-      // timer restoration if needed
-    }
-  }, [attemptId]);
-
-  useEffect(() => {
-    if (!started || submitted) return;
-
-    const handleFullscreenChange = () => {
-      if (!document.fullscreenElement) toast.warning("You exited fullscreen.");
-    };
-    const handleTabChange = () => {
-      if (document.hidden) {
-        toast.warning("Tab switching is not allowed.");
-        if (malpracticeCount < 7) {
-          dispatch(incrementMalpractice());
+    const validateToken = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:3000/test/start/${token}`
+        );
+        if (!response.ok) {
+          throw new Error(await response.text());
         }
-
-        const newCount = malpracticeCount + 1;
-        if (newCount >= 7) {
-          dispatch(
-            setAlertMessage("❌ Test terminated due to multiple malpractices.")
-          );
-          dispatch(setIsTestCompleted(true));
-          handleFinalSubmit();
-          setTimeout(() => {
-            // window.location.href = "about:blank";
-            return <MalpracticeTerminated />;
-          }, 5000);
-        }
+        const data = await response.json();
+      } catch (err: any) {
+        navigate("/link-expired");
       }
     };
 
-    const beforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = "Are you sure you want to leave?";
-    };
+    if (token) {
+      validateToken();
+    }
+  }, [token, navigate]);
 
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("visibilitychange", handleTabChange);
-    window.addEventListener("beforeunload", beforeUnload);
+  // Restore timer once on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(`timer-${attemptId}`);
+    if (saved) {
+      const restored = parseInt(saved, 10);
+      if (restored > 0) {
+        dispatch(setTimeLeft(restored));
+      }
+    }
+  }, [attemptId, dispatch]);
 
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener("visibilitychange", handleTabChange);
-      window.removeEventListener("beforeunload", beforeUnload);
-    };
-  }, [started, submitted]);
+  // Navigate away if submitted
+  useEffect(() => {
+    if (submitted) {
+      navigate("/thank-you");
+    }
+  }, [submitted, navigate]);
 
+  // Decrement timer every second & persist
   useEffect(() => {
     if (!started || submitted) return;
+
     const timer = setInterval(() => {
-      dispatch(decrementTime());
+      dispatch(decrementTime({ attemptId }));
     }, 1000);
+
     return () => clearInterval(timer);
-  }, [started, submitted, dispatch]);
+  }, [started, submitted, dispatch, attemptId]);
+
+  useEffect(() => {
+    if (timeLeft <= 0 && started && !submitted) {
+      setShowCodingPlatform(true);
+      handleFinalSubmit();
+    }
+  }, [timeLeft, started, submitted]);
 
   // Handler Functions
   const handleOptionSelect = (questionId: string, optionId: string) => {
@@ -187,7 +175,6 @@ const TestPage = () => {
       const formData = new FormData();
       formData.append("applicant_id", applicantId || "");
       //   await axios.post("http://localhost:8000/clear", formData);
-      console.log("🧹 Face data cleared successfully");
       localStorage.removeItem(`timer-${attemptId}`);
       toast.success("Test submitted successfully!");
     } catch (err) {
@@ -209,7 +196,7 @@ const TestPage = () => {
 
       toast.info(`Attempts left: ${3 - (data.attemptCount ?? 0)}`);
     } catch (err: any) {
-      toast.error(err || "Unable to resume test");
+      navigate("/attempts-exceeded");
     }
   };
 
@@ -217,177 +204,173 @@ const TestPage = () => {
   const [showCodingPlatform, setShowCodingPlatform] = useState(false);
 
   return (
-    // <FullScreen handle={handle} className="test-page">
-    <>
-      <Navbar />
-      <Outlet />
-      <Alerts />
-      <ProctorApp handleFinalSubmit={handleFinalSubmit} />
+    <FullScreen handle={handle} className="test-page">
+      <>
+        {/* <Navbar /> */}
+        <Navbar timeLeft={timeLeft} formatTime={formatTime} />
+        <Outlet />
+        <Alerts />
+        <ProctorApp handleFinalSubmit={handleFinalSubmit} />
 
-      <div className="coding-platform">
-        {/* // Main container */}
-        <div className="main-containers">
-          <ToastContainer
-            position="bottom-left"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="colored"
-          />
-          {loading ? (
-            <div className="spinner">Loading test...</div>
-          ) : (
-            <div className="mcq-test-container">
-              {!started && !submitted ? (
-                // Instructions
-                <div className="instructions">
-                  <div className="start-testtt">
-                    <h2>Test Instructions</h2>
-                    {verificationComplete && (
-                      <button
-                        className="submit-button str-btn"
-                        onClick={handleStartTest}
-                      >
-                        Start Test
-                      </button>
-                    )}
-                  </div>
-
-                  <h3>General Guidelines</h3>
-                  <ul>
-                    <li>
-                      The test consists of two sections:
-                      <ul>
-                        <li>Multiple Choice Questions (MCQs)</li>
-                        <li>Coding Questions</li>
-                      </ul>
-                    </li>
-                    <li>
-                      Ensure you have a stable internet connection throughout
-                      the test.
-                    </li>
-                    <li>
-                      Do not refresh or close the browser while taking the test.
-                    </li>
-                    <li>
-                      Your activity will be monitored by the proctoring system.
-                    </li>
-                  </ul>
-
-                  <h3>MCQ Section</h3>
-                  <ul>
-                    <li>Each question has only one correct answer.</li>
-                    <li>
-                      You may skip questions and return to them before starting
-                      the coding section.
-                    </li>
-                    <li>
-                      Once you select an answer and click Next, you cannot
-                      revisit that question.
-                    </li>
-                    <li>
-                      Carefully review all your answers before proceeding to the
-                      coding section.
-                    </li>
-                  </ul>
-
-                  <h3>Coding Section</h3>
-                  <ul>
-                    <li>
-                      Write your code inside the provided function signature.
-                    </li>
-                    <li>
-                      Your function must return the result; do not use print
-                      statements.
-                    </li>
-                    <li>
-                      Avoid using built-in methods unless explicitly allowed.
-                    </li>
-                    <li>
-                      Ensure your code is correct, complete, and efficient
-                      before submission.
-                    </li>
-                  </ul>
-
-                  <h3>Submission Guidelines</h3>
-                  <ul>
-                    <li>
-                      Carefully review your code and ensure it meets all
-                      requirements before submitting.
-                    </li>
-                    <li>Click the Submit button to finalize your test.</li>
-                    <li>
-                      Once submitted, you will not be able to make any further
-                      changes to your code.
-                    </li>
-                    <li>
-                      After submission, the system will automatically perform
-                      proctoring cleanup and record your final submission.
-                    </li>
-                  </ul>
-
-                  <div style={{ paddingRight: "30px" }}>
-                    {verificationComplete && (
-                      <button
-                        className="submit-button str-btn"
-                        style={{ marginLeft: "400px", marginTop: "20px" }}
-                        onClick={handleStartTest}
-                      >
-                        Start Test
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                !showCodingPlatform && (
-                  <>
-                    {/* //QuestionBlock */}
-                    <QuestionBlock
-                      currentQuestion={questions[currentIndex]}
-                      currentIndex={currentIndex}
-                      answers={answers}
-                      handleOptionSelect={handleOptionSelect}
-                      handleNext={handleNext}
-                      handleSkip={handleSkip}
-                    />
-
-                    {/* Side Bar */}
-                    <Sidebar
-                      questions={questions}
-                      currentIndex={currentIndex}
-                      setCurrentIndex={(index) =>
-                        dispatch(setCurrentIndex(index))
-                      }
-                      answeredCount={answeredCount}
-                      timeLeft={timeLeft}
-                      formatTime={formatTime}
-                      onStartCodingTest={() => setShowCodingPlatform(true)}
-                    />
-
-                    {/* ConfirModal
-                      {showConfirmModal && (
-                        <ConfirmModal
-                          onConfirm={handleFinalSubmit}
-                          isSubmitting={submittingFinal}
-                        />
+        <div className="coding-platform">
+          {/* // Main container */}
+          <div className="main-containers">
+            <ToastContainer
+              position="bottom-left"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="colored"
+            />
+            {loading ? (
+              <div className="spinner">Loading test...</div>
+            ) : (
+              <div className="mcq-test-container">
+                {!started && !submitted ? (
+                  // Instructions
+                  <div className="instructions">
+                    <div className="start-testtt">
+                      <h2>Test Instructions</h2>
+                      {/* {verificationComplete && (
+                        <button
+                          className="submit-button str-btn"
+                          onClick={handleStartTest}
+                        >
+                          Start Test
+                        </button>
                       )} */}
-                  </>
-                )
-              )}
-            </div>
+                    </div>
+
+                    <h3>General Guidelines</h3>
+                    <ul>
+                      <li>
+                        The test consists of two sections:
+                        <ul>
+                          <li>Multiple Choice Questions (MCQs)</li>
+                          <li>Coding Questions</li>
+                        </ul>
+                      </li>
+                      <li>
+                        Ensure you have a stable internet connection throughout
+                        the test.
+                      </li>
+                      <li>
+                        Do not refresh or close the browser while taking the
+                        test.
+                      </li>
+                      <li>
+                        Your activity will be monitored by the proctoring
+                        system.
+                      </li>
+                    </ul>
+
+                    <h3>MCQ Section</h3>
+                    <ul>
+                      <li>Each question has only one correct answer.</li>
+                      <li>
+                        You may skip questions and return to them before
+                        starting the coding section.
+                      </li>
+                      <li>
+                        Once you select an answer and click Next, you cannot
+                        revisit that question.
+                      </li>
+                      <li>
+                        Carefully review all your answers before proceeding to
+                        the coding section.
+                      </li>
+                    </ul>
+
+                    <h3>Coding Section</h3>
+                    <ul>
+                      <li>
+                        Write your code inside the provided function signature.
+                      </li>
+                      <li>
+                        Your function must return the result; do not use print
+                        statements.
+                      </li>
+                      <li>
+                        Avoid using built-in methods unless explicitly allowed.
+                      </li>
+                      <li>
+                        Ensure your code is correct, complete, and efficient
+                        before submission.
+                      </li>
+                    </ul>
+
+                    <h3>Submission Guidelines</h3>
+                    <ul>
+                      <li>
+                        Carefully review your code and ensure it meets all
+                        requirements before submitting.
+                      </li>
+                      <li>Click the Submit button to finalize your test.</li>
+                      <li>
+                        Once submitted, you will not be able to make any further
+                        changes to your code.
+                      </li>
+                      <li>
+                        After submission, the system will automatically perform
+                        proctoring cleanup and record your final submission.
+                      </li>
+                    </ul>
+
+                    <div style={{ paddingRight: "30px" }}>
+                      {verificationComplete && (
+                        <button
+                          className="submit-button str-btn"
+                          style={{ marginLeft: "400px", marginTop: "20px" }}
+                          onClick={handleStartTest}
+                        >
+                          Start Test
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  !showCodingPlatform && (
+                    <>
+                      {/* //QuestionBlock */}
+                      <QuestionBlock
+                        currentQuestion={questions[currentIndex]}
+                        currentIndex={currentIndex}
+                        answers={answers}
+                        handleOptionSelect={handleOptionSelect}
+                        handleNext={handleNext}
+                        handleSkip={handleSkip}
+                      />
+
+                      {/* Side Bar */}
+                      <Sidebar
+                        questions={questions}
+                        currentIndex={currentIndex}
+                        setCurrentIndex={(index) =>
+                          dispatch(setCurrentIndex(index))
+                        }
+                        answeredCount={answeredCount}
+                        onStartCodingTest={() => setShowCodingPlatform(true)}
+                      />
+                    </>
+                  )
+                )}
+              </div>
+            )}
+          </div>
+          {showCodingPlatform && (
+            <CodingPlatform
+              handleFinalSubmit={handleFinalSubmit}
+              autoSubmit={timeLeft <= 0}
+            />
           )}
         </div>
-        {showCodingPlatform && (
-          <CodingPlatform handleFinalSubmit={handleFinalSubmit} />
-        )}
-      </div>
-    </>
-    // </FullScreen>
+      </>
+    </FullScreen>
   );
 };
 

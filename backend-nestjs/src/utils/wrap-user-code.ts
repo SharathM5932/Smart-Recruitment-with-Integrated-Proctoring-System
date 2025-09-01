@@ -91,7 +91,6 @@ export function wrapUserCode({
 }: WrapOptions): string {
   const params = extractParams(signature);
   const argsStr = params.map((p) => p.name).join(', ');
-  // console.log(">> Params:", params);
 
   switch (language.toLowerCase()) {
     case 'python': {
@@ -115,8 +114,7 @@ export function wrapUserCode({
       }
       const paramsforPython = extractParamsforPython(signature);
       const paramNames = paramsforPython.map((p) => p.name).join(', ');
-      console.log('>> paramNames:', paramNames);
-      console.log('>> Params:', params);
+
       // Indent user code properly
       const indentPython = (code: string) =>
         code
@@ -339,7 +337,6 @@ process.stdin.on('end', () => {
 }
 
     const result = ${functionName}(...args);
-    console.log(formatOutput(result));
   }
 });
 `.trim();

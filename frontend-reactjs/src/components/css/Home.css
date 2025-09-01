@@ -28,3 +28,21 @@
 .team-section {
   margin-top: 10px;
 }
+
+.home_container {
+  font-family: var(--font-family-brooklyn);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.home_sub {
+  font-size: 2rem;
+}
+
+.home_p {
+  font-size: 1rem;
+  padding-bottom: 10px;
+}

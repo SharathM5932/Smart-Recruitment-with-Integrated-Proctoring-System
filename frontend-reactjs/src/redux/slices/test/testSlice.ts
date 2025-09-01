@@ -1,5 +1,10 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { fetchTestData, submitAnswer, skipQuestion, evaluateTest } from './testThunks';
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  evaluateTest,
+  fetchTestData,
+  skipQuestion,
+  submitAnswer,
+} from "./testThunks";
 
 interface Option {
   id: string;
@@ -14,7 +19,7 @@ interface MCQ {
 }
 interface ApiQuestion {
   id: string;
-  status: 'not_visited' | 'skipped' | 'answered';
+  status: "not_visited" | "skipped" | "answered";
   selectedOptionId: string | null;
   editable: boolean;
   mcq_question: MCQ;
@@ -45,7 +50,7 @@ const initialState: TestState = {
 };
 
 const testSlice = createSlice({
-  name: 'test',
+  name: "test",
   initialState,
   reducers: {
     setStarted(state, action: PayloadAction<boolean>) {
@@ -54,14 +59,28 @@ const testSlice = createSlice({
     setCurrentIndex(state, action: PayloadAction<number>) {
       state.currentIndex = action.payload;
     },
-    setAnswer(state, action: PayloadAction<{ questionId: string; optionId: string }>) {
+    setAnswer(
+      state,
+      action: PayloadAction<{ questionId: string; optionId: string }>
+    ) {
       state.answers[action.payload.questionId] = action.payload.optionId;
     },
-    decrementTime(state) {
-      state.timeLeft -= 1;
+    decrementTime(state, action: PayloadAction<{ attemptId?: string }>) {
+      state.timeLeft = state.timeLeft > 0 ? state.timeLeft - 1 : 0;
+
+      if (action.payload?.attemptId) {
+        localStorage.setItem(
+          `timer-${action.payload.attemptId}`,
+          String(state.timeLeft)
+        );
+      }
     },
+
     resetTimer(state) {
       state.timeLeft = 45 * 60;
+    },
+    setTimeLeft: (state, action) => {
+      state.timeLeft = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -79,23 +98,29 @@ const testSlice = createSlice({
           }
         });
         state.currentIndex = lastSeenQuestion
-          ? questions.findIndex((q: ApiQuestion) => q.mcq_question.id === lastSeenQuestion.id)
+          ? questions.findIndex(
+              (q: ApiQuestion) => q.mcq_question.id === lastSeenQuestion.id
+            )
           : 0;
         state.loading = false;
       })
       .addCase(submitAnswer.fulfilled, (state, action) => {
         const { questionId } = action.payload;
-        const question = state.questions.find(q => q.mcq_question.id === questionId);
+        const question = state.questions.find(
+          (q) => q.mcq_question.id === questionId
+        );
         if (question) {
-          question.status = 'answered';
+          question.status = "answered";
           question.editable = false;
         }
       })
       .addCase(skipQuestion.fulfilled, (state, action) => {
         const { questionId } = action.payload;
-        const question = state.questions.find(q => q.mcq_question.id === questionId);
+        const question = state.questions.find(
+          (q) => q.mcq_question.id === questionId
+        );
         if (question) {
-          question.status = 'skipped';
+          question.status = "skipped";
           question.editable = true;
         }
       })
@@ -103,8 +128,15 @@ const testSlice = createSlice({
         state.score = action.payload.correct;
         state.submitted = true;
       });
-  }
+  },
 });
 
-export const { setStarted, setCurrentIndex, setAnswer, decrementTime, resetTimer } = testSlice.actions;
+export const {
+  setStarted,
+  setCurrentIndex,
+  setAnswer,
+  decrementTime,
+  resetTimer,
+  setTimeLeft,
+} = testSlice.actions;
 export default testSlice.reducer;

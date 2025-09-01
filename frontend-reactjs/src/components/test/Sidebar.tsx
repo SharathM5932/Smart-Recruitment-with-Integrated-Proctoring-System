@@ -23,8 +23,8 @@ interface Props {
   currentIndex: number;
   setCurrentIndex: (i: number) => void;
   answeredCount: number;
-  timeLeft: number;
-  formatTime: (s: number) => string;
+  //   timeLeft: number;
+  //   formatTime: (s: number) => string;
   onStartCodingTest: () => void;
 }
 
@@ -33,14 +33,14 @@ const Sidebar = ({
   currentIndex,
   setCurrentIndex,
   answeredCount,
-  timeLeft,
-  formatTime,
+  //   timeLeft,
+  //   formatTime,
   onStartCodingTest,
 }: Props) => {
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <div className="timer">Time Left: {formatTime(timeLeft)}</div>
+        {/* <div className="timer">Time Left: {formatTime(timeLeft)}</div> */}
 
         <div className="progress">
           Answered: {answeredCount} / {questions.length}

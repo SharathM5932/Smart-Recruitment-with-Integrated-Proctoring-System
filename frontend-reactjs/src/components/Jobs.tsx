@@ -1,7 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import "./css/Jobs.css";
 
 interface Job {
@@ -37,8 +36,6 @@ const Jobs: React.FC = () => {
         const res = await axios.get("http://localhost:3000/jobs");
         setJobs(res.data.data);
       } catch (err) {
-        console.error("Failed to fetch jobs:", err);
-        toast.error("Failed to fetch jobs list");
       } finally {
         setLoading(false);
       }

@@ -36,8 +36,9 @@ interface RunResponse {
 }
 interface Props {
   handleFinalSubmit: () => void;
+  autoSubmit?: boolean;
 }
-const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit }) => {
+const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit, autoSubmit }) => {
   const [question, setQuestion] = useState<QuestionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [code, setCode] = useState("");
@@ -64,11 +65,6 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit }) => {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        console.log(
-          "Title",
-          `http://localhost:3000/applicant-questions/start/${applicantId}/${attemptId}/${language}`
-        );
-
         const res = await axios.get(
           `http://localhost:3000/applicant-questions/start/${applicantId}/${attemptId}/${language}`
         );
@@ -117,31 +113,80 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit }) => {
       .catch(console.error)
       .finally(() => setRunning(false)); // stop loader
   };
+  useEffect(() => {
+    if (autoSubmit && !submitting) {
+      handleAutoSubmit();
+    }
+  }, [autoSubmit]);
 
-  const handleSubmit = () => {
+  const handleAutoSubmit = async () => {
+    if (!question) return;
+    try {
+      // ✅ First run test cases
+      const runRes = await fetch("http://localhost:3000/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          problemKey: question.problemKey,
+          language: selectedLanguage,
+          userCode: code,
+        }),
+      });
+      const runData = await runRes.json();
+
+      // ✅ Then submit code
+      await fetch("http://localhost:3000/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          applicantId,
+          problemKey: question.problemKey,
+          language: selectedLanguage,
+          userCode: code,
+        }),
+      });
+
+      // ✅ Finally trigger MCQ + coding evaluation
+      await handleFinalSubmit();
+    } catch (err) {
+      console.error("❌ Auto submit failed:", err);
+    }
+  };
+
+  const handleSubmit = async () => {
     if (!question) return;
     setSubmitting(true);
-    fetch("http://localhost:3000/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        applicantId: applicantId,
-        problemKey: question.problemKey,
-        language: selectedLanguage,
-        userCode: code,
-      }),
-    })
-      .then((res) => res.json())
-      .then(() => handleFinalSubmit())
-      .then(() => navigate("/thank-you"))
-      .catch(console.error);
+
+    try {
+      // ✅ First submit code to backend
+      await fetch("http://localhost:3000/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          applicantId,
+          problemKey: question.problemKey,
+          language: selectedLanguage,
+          userCode: code,
+        }),
+      });
+
+      // ✅ Then trigger final MCQ + coding evaluation
+      await handleFinalSubmit();
+
+      // ❌ Don't use alert or navigate here
+      // ✅ Your TestPage useEffect will handle navigate("/thank-you")
+    } catch (err) {
+      console.error("Error submitting code:", err);
+    } finally {
+      setSubmitting(false);
+    }
   };
-  //   .then(() => alert("Are you sure you want to submit the test?"))
 
   if (loading) return <p className="loading">Loading question...</p>;
 
   return (
     <div className="coding-platform">
+      {/* === LEFT PANEL: Problem Description === */}
       <div className="left-panel">
         {question && (
           <>
@@ -161,21 +206,24 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit }) => {
                       <pre>{question.testCases[0].expectedOutput}</pre>
                     </div>
                   </li>
-                  <li>
-                    <div className="test-case">
-                      <h4>Test Case 2</h4>
-                      <strong>Input:</strong>
-                      <pre>{question.testCases[1].input}</pre>
-                      <strong>Expected Output:</strong>
-                      <pre>{question.testCases[1].expectedOutput}</pre>
-                    </div>
-                  </li>
+                  {question.testCases.length > 1 && (
+                    <li>
+                      <div className="test-case">
+                        <h4>Test Case 2</h4>
+                        <strong>Input:</strong>
+                        <pre>{question.testCases[1].input}</pre>
+                        <strong>Expected Output:</strong>
+                        <pre>{question.testCases[1].expectedOutput}</pre>
+                      </div>
+                    </li>
+                  )}
                 </>
               )}
             </ul>
           </>
         )}
 
+        {/* Notes Section */}
         <div className="alter-before-coding">
           <p>Note</p>
           <ul>
@@ -188,7 +236,9 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit }) => {
         </div>
       </div>
 
+      {/* === RIGHT PANEL: Editor + Console === */}
       <div className="right-panel">
+        {/* Language Selector */}
         <div className="language-selector">
           <label htmlFor="language">Language: </label>
           <select
@@ -205,6 +255,7 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit }) => {
           </select>
         </div>
 
+        {/* Editor */}
         <div className="editor-section">
           <Editor
             height="60vh"
@@ -220,6 +271,7 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit }) => {
             }}
           />
 
+          {/* Run / Submit Buttons */}
           <div className="button-row">
             <button className="run-btn" onClick={handleRun} disabled={running}>
               {running ? "Running..." : "Run"}
@@ -234,6 +286,12 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit }) => {
           </div>
         </div>
 
+        {/* Auto Submit Trigger */}
+        {autoSubmit && !submitting && (
+          <p className="auto-submit-note">⏳ Auto submit in progress...</p>
+        )}
+
+        {/* Console + Test Results */}
         {running && <p className="loading">Running code, please wait...</p>}
 
         {runResult && !running && (
@@ -261,7 +319,7 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit }) => {
                   <div>
                     <strong>Passed:</strong> {tr.passed ? "✅" : "❌"}
                   </div>
-                  <div>{tr?.stderr}</div>
+                  {tr?.stderr && <div>{tr.stderr}</div>}
                 </li>
               ))}
             </ul>

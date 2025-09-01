@@ -48,7 +48,7 @@ const CodingResultPage = () => {
   }, [applicantId]);
 
   if (!codingResults)
-    return <div className="coding-result-container">Loading...</div>;
+    return <div className="coding-result-container">Not written anything</div>;
 
   return (
     <div className="coding-result-container">

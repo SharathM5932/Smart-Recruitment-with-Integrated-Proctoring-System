@@ -1,22 +1,22 @@
 import {
-  Injectable,
   BadRequestException,
+  Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
-import { Applicant } from './entities/applicants.entity';
-import { Skill } from 'src/skills/entities/skill.entity';
-import { McqQuestion } from 'src/question-bank/entities/question.entity';
-import { TestAttempt } from './entities/test-attempt.entity';
-import { TestAccessToken } from './entities/test-access-token.entity';
 import { ApplicantQuestion } from 'src/applicant-questions/entities/applicant_questions.entity';
 import { Job } from 'src/jobs/entities/job.entity';
 import { MailerService } from 'src/mailer/mailer.service';
-import { ExperienceLevel } from './entities/experience_levels.entity';
+import { McqQuestion } from 'src/question-bank/entities/question.entity';
+import { Skill } from 'src/skills/entities/skill.entity';
+import { DataSource, Repository } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { GenerateTestLinkDto } from './dto/link.dto';
+import { Applicant } from './entities/applicants.entity';
+import { ExperienceLevel } from './entities/experience_levels.entity';
+import { TestAccessToken } from './entities/test-access-token.entity';
+import { TestAttempt } from './entities/test-attempt.entity';
 
 @Injectable()
 export class EvaluationService {
@@ -454,5 +454,40 @@ export class EvaluationService {
       .getOne();
 
     return question ?? null;
+  }
+
+  async validateAndStartTest(token: string) {
+    const tokenEntity = await this.tokenRepo.findOne({
+      where: { token, is_used: false },
+      relations: ['test_attempt', 'test_attempt.applicant'],
+    });
+
+    if (!tokenEntity) {
+      throw new BadRequestException('Invalid or already used token');
+    }
+
+    if (new Date() > new Date(tokenEntity.expires_at)) {
+      throw new BadRequestException('Test link has expired');
+    }
+
+    const applicant = tokenEntity.test_attempt.applicant;
+
+    if (!applicant) {
+      throw new NotFoundException('Applicant not found for this token');
+    }
+
+    // Count total attempts for this applicant
+    const existingAttempts = await this.attemptRepo.count({
+      where: { applicant: { id: applicant.id } },
+    });
+
+    if (existingAttempts >= 3) {
+      throw new BadRequestException('Maximum test attempts exceeded (3)');
+    }
+
+    return {
+      message: 'Token is valid',
+      attemptId: tokenEntity.test_attempt.id,
+    };
   }
 }

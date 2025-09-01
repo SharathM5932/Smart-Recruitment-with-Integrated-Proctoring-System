@@ -127,7 +127,6 @@ const SendTest = () => {
         payload
       );
       toast.success("Test link sent successfully!");
-      console.log("Response:", response.data);
 
       // Reset form
       setFormData({

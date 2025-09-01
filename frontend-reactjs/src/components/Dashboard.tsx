@@ -1,13 +1,15 @@
+import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
   BarChart3,
   CheckCircle,
   Clock,
+  Loader2,
   TrendingUp,
   Users,
   XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Bar,
   BarChart,
@@ -20,59 +22,39 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import axiosInstance from "../api/axiosInstance";
 import "../components/css/Dashboard.css";
 
 const fetchDashboardData = async () => {
-  const response = await fetch("http://localhost:3000/dashboard");
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
-  return response.json();
+  const { data } = await axiosInstance.get("/dashboard");
+  return data;
 };
 
 const Dashboard = () => {
-  const [skillsFilter, setSkillsFilter] = useState("all"); // all, selected, not-selected
-  const [experienceFilter, setExperienceFilter] = useState("all"); // all, selected, not-selected
-  const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [skillsFilter, setSkillsFilter] = useState("all");
+  const [experienceFilter, setExperienceFilter] = useState("all");
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        const result = await fetchDashboardData();
-        setData(result);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadData();
-    const interval = setInterval(loadData, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: fetchDashboardData,
+    refetchInterval: 30000, // refetch every 30s
+  });
 
   if (isLoading) {
     return (
       <div className="dashboard-loading">
         <div className="loading-spinner">
-          <div className="spinner"></div>
-          <span>Loading dashboard...</span>
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error instanceof Error) {
     return (
       <div className="dashboard-error">
         <div className="error-content">
-          <XCircle className="error-icon" />
-          <h3>Error loading dashboard</h3>
-          <p>{error.message}</p>
+          <XCircle className="h-8 w-8 text-red-600" />
         </div>
       </div>
     );

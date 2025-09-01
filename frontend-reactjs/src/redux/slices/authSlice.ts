@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 
 interface User {
   id: string;
@@ -17,8 +17,8 @@ interface AuthState {
 }
 
 // ✅ Hydrate from localStorage on page load
-const userFromStorage = localStorage.getItem('user');
-const tokenFromStorage = localStorage.getItem('token');
+const userFromStorage = localStorage.getItem("user");
+const tokenFromStorage = localStorage.getItem("token");
 
 const initialState: AuthState = {
   user: userFromStorage ? JSON.parse(userFromStorage) : null,
@@ -30,20 +30,25 @@ const initialState: AuthState = {
 
 // LOGIN THUNK
 export const loginUser = createAsyncThunk(
-  'auth/login',
+  "auth/login",
   async (credentials: { email: string; password: string }, thunkAPI) => {
     try {
-      const response = await axios.post('http://localhost:3000/auth/login', credentials);
+      const response = await axios.post(
+        "http://localhost:3000/auth/login",
+        credentials
+      );
       return response.data;
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.response?.data?.message || 'Login failed');
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Login failed"
+      );
     }
   }
 );
 
 // REGISTER THUNK
 export const registerUser = createAsyncThunk(
-  'auth/register',
+  "auth/register",
   async (
     formData: {
       name: string;
@@ -56,16 +61,21 @@ export const registerUser = createAsyncThunk(
     thunkAPI
   ) => {
     try {
-      const response = await axios.post('http://localhost:3000/users', formData);
+      const response = await axios.post(
+        "http://localhost:3000/users",
+        formData
+      );
       return response.data;
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.response?.data?.message || 'Registration failed');
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Registration failed"
+      );
     }
   }
 );
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     logout(state) {
@@ -73,13 +83,13 @@ const authSlice = createSlice({
       state.token = null;
       state.error = null;
       state.isAuthenticated = false;
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
   },
-  extraReducers: builder => {
+  extraReducers: (builder) => {
     builder
-      .addCase(loginUser.pending, state => {
+      .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -88,8 +98,8 @@ const authSlice = createSlice({
         state.user = action.payload.data;
         state.token = action.payload.access_token;
         state.isAuthenticated = true;
-        localStorage.setItem('token', action.payload.access_token);
-        localStorage.setItem('user', JSON.stringify(action.payload.data));
+        localStorage.setItem("token", action.payload.access_token);
+        localStorage.setItem("user", JSON.stringify(action.payload.data));
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -97,7 +107,7 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
       })
 
-      .addCase(registerUser.pending, state => {
+      .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -114,8 +124,6 @@ const authSlice = createSlice({
 
 export const { logout } = authSlice.actions;
 export default authSlice.reducer;
-
-
 
 // import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 // import axios from 'axios';

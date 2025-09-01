@@ -1,38 +1,25 @@
-import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2, XCircle } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import axiosInstance from "../api/axiosInstance";
 import "./css/Results.css";
 
-const fetchResultsData = async () => {
-  const response = await fetch("http://localhost:3000/dashboard");
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
-  return response.json();
+const fetchDashboardData = async () => {
+  const { data } = await axiosInstance.get("/dashboard");
+  return data;
 };
 
 const Results = () => {
-  const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState("name");
   const [filterStatus, setFilterStatus] = useState("all"); // all, selected, not-selected, completed, pending, expired, attempts-exceeded
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        const result = await fetchResultsData();
-        setData(result);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadData();
-  }, []);
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: fetchDashboardData,
+    refetchInterval: 30000, // refetch every 30s
+  });
 
   const filteredAndSortedCandidates = useMemo(() => {
     if (!data?.data) return [];
@@ -166,21 +153,19 @@ const Results = () => {
 
   if (isLoading) {
     return (
-      <div className="results-loading">
+      <div className="dashboard-loading">
         <div className="loading-spinner">
-          <div className="spinner"></div>
-          <span>Loading results...</span>
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error instanceof Error) {
     return (
-      <div className="results-error">
+      <div className="dashboard-error">
         <div className="error-content">
-          <h3>Error loading results</h3>
-          <p>{error.message}</p>
+          <XCircle className="h-8 w-8 text-red-600" />
         </div>
       </div>
     );

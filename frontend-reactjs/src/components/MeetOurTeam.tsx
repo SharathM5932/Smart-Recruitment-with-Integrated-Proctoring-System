@@ -44,7 +44,7 @@ const MeetOurTeam = () => {
               <div className="clean-image-wrapper">
                 <img src={member.image} alt={member.name} />
               </div>
-              <h3>{member.name}</h3>
+              <h3 className="dev_name">{member.name}</h3>
               <p>{member.role}</p>
             </div>
           </a>

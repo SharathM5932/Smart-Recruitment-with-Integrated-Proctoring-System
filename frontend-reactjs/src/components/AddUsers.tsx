@@ -116,7 +116,7 @@ const AddUser: React.FC = () => {
       }
     } catch (error) {
       toast.error("An unexpected error occurred");
-      console.error(error);
+      //   console.error(error);
     }
   };
 
@@ -190,7 +190,7 @@ const AddUser: React.FC = () => {
             {errors.password && <p className="error">{errors.password}</p>}
             <button type="submit">Register</button>
           </form>
-          {roleLoading && <p>Loading roles...</p>}
+          {/* {roleLoading && <p>Loading roles...</p>} */}
         </div>
       </div>
     </div>

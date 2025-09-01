@@ -36,7 +36,6 @@ const AddJob: React.FC = () => {
     try {
       const response = await axios.post("http://localhost:3000/jobs", postData);
       toast.success("Job added successfully!");
-      console.log("Success:", response.data);
 
       setFormData({ job: "", client: "" });
       navigate("/jobs");
