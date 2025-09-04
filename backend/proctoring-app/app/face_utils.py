@@ -156,6 +156,7 @@ def clear_registered_face(applicant_id):
 def detect_faces_passive(image_bytes):
     """
     Passive face detection without storing any images or embeddings
+    Returns face position and coverage information
     """
     img = preprocess_image(image_bytes)
     if img is None:
@@ -163,14 +164,40 @@ def detect_faces_passive(image_bytes):
 
     try:
         faces = model.get(img)
-        # print(f"🧠 Passive detection - Faces detected: {len(faces)}")
+        print(f"🧠 Passive detection - Faces detected: {len(faces)}")
 
         if len(faces) == 0:
             return {"status": "no_face", "count": 0}
         elif len(faces) > 1:
             return {"status": "multiple_faces", "count": len(faces)}
         else:
-            return {"status": "face_detected", "count": 1}
+            # Calculate face coverage percentage
+            face = faces[0]
+            bbox = face.bbox.astype(int)
+            img_height, img_width = img.shape[:2]
+
+            # Calculate face area and image area
+            face_area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
+            img_area = img_width * img_height
+            coverage_percentage = (face_area / img_area) * 100
+
+            # Calculate how centered the face is
+            face_center_x = (bbox[0] + bbox[2]) / 2
+            face_center_y = (bbox[1] + bbox[3]) / 2
+            img_center_x = img_width / 2
+            img_center_y = img_height / 2
+
+            # Calculate offset from center (as percentage of image dimensions)
+            x_offset_percentage = abs(face_center_x - img_center_x) / img_width * 100
+            y_offset_percentage = abs(face_center_y - img_center_y) / img_height * 100
+
+            return {
+                "status": "face_detected",
+                "count": 1,
+                "coverage": round(coverage_percentage, 2),
+                "x_offset": round(x_offset_percentage, 2),
+                "y_offset": round(y_offset_percentage, 2),
+            }
     except Exception:
         # print(f"❌ Error in passive face detection: {e}")
         return {"status": "detection_error"}

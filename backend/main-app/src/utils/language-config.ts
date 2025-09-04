@@ -4,9 +4,13 @@ export const LANGUAGE_CONFIG = {
     image: 'python:3.10.4',
     command: (file) => `python ${file}`,
   },
+  //   javascript: {
+  //     extension: '.js',
+  //     image: 'node:18.15.0',
+  //     command: (file) => `node ${file}`,
   javascript: {
+    image: 'node:20.17.0',
     extension: '.js',
-    image: 'node:18.15.0',
     command: (file) => `node ${file}`,
   },
   c: {

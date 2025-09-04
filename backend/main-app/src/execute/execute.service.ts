@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { RunCodeDto } from './dto/run-code.dto';
-import { LANGUAGE_CONFIG } from '../utils/language-config';
-import { ProblemService } from '../problem/problem.service';
+import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { spawn } from 'child_process';
-import { v4 as uuid } from 'uuid';
-import { wrapUserCode } from '../utils/wrap-user-code';
-import { TestResult } from './dto/test-result.interface';
 import { SubmissionService } from 'src/submissions/submission.service';
+import { v4 as uuid } from 'uuid';
+import { ProblemService } from '../problem/problem.service';
+import { LANGUAGE_CONFIG } from '../utils/language-config';
+import { wrapUserCode } from '../utils/wrap-user-code';
+import { RunCodeDto } from './dto/run-code.dto';
+import { TestResult } from './dto/test-result.interface';
 
 @Injectable()
 export class ExecuteService {
@@ -76,12 +76,16 @@ export class ExecuteService {
       child.stdin.end();
     });
   }
-  //   private normalize(value: string): string {
-  //     return value.trim().toLowerCase();
-  //   }
   private normalize(value: string): string {
-    return value.replace(/\s+/g, '').toLowerCase();
+    return value
+      .trim()
+      .replace(/\s+/g, ' ') // collapse multiple spaces
+      .replace(/\[\s+/g, '[') // no spaces after opening bracket
+      .replace(/\s+\]/g, ']') // no spaces before closing bracket
+      .replace(/,\s+/g, ',') // no spaces after commas
+      .toLowerCase();
   }
+
   // ✅ New method: validateSubmission
   async validateSubmission({
     problemKey,
@@ -128,7 +132,7 @@ export class ExecuteService {
       if ('error' in executionResult) {
         results.push({
           input: testCase.input,
-          expected: testCase.expectedOutput.trim(),
+          expected: this.normalize(testCase.expectedOutput),
           actual: '',
           passed: false,
           stderr: executionResult.stderr || '',
@@ -146,8 +150,8 @@ export class ExecuteService {
         }
         results.push({
           input: testCase.input,
-          expected: testCase.expectedOutput.trim(),
-          actual,
+          expected: this.normalize(testCase.expectedOutput),
+          actual: this.normalize(actual),
           passed:
             this.normalize(actual) ===
             this.normalize(testCase.expectedOutput.trim()),
