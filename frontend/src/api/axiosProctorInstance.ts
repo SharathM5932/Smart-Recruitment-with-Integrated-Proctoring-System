@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosProctorInstance = axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: import.meta.env.VITE_PROCTORING_APP_ENDPOINT,
   headers: {
     "Content-Type": "application/json",
   },

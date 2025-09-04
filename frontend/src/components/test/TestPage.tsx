@@ -14,6 +14,7 @@ import "../css/TestPage.css";
 import QuestionBlock from "./QuestionBlock";
 import Sidebar from "./Sidebar";
 
+import { Loader2 } from "lucide-react";
 import axiosInstance from "../../api/axiosInstance";
 import {
   decrementTime,
@@ -294,7 +295,7 @@ const TestPage = () => {
               theme="colored"
             />
             {loading ? (
-              <div className="spinner">Loading test...</div>
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
             ) : (
               <div className="mcq-test-container">
                 {!started && !submitted ? (
@@ -313,6 +314,7 @@ const TestPage = () => {
                     </div>
 
                     <h3>General Guidelines</h3>
+                    <p>Please read carefully before beginning your test:</p>
                     <ul>
                       <li>
                         The test consists of two sections:
@@ -322,16 +324,32 @@ const TestPage = () => {
                         </ul>
                       </li>
                       <li>
-                        Ensure you have a stable internet connection throughout
-                        the test.
+                        Ensure a stable internet connection throughout the test.
                       </li>
                       <li>
                         Do not refresh or close the browser while taking the
                         test.
                       </li>
                       <li>
-                        Your activity will be monitored by the proctoring
-                        system.
+                        Your activity will be continuously monitored by the
+                        proctoring system.
+                      </li>
+                      <li>
+                        Use a working webcam and microphone, and sit in a
+                        well-lit environment with no strong backlight.
+                      </li>
+                      <li>
+                        Only you should be visible in the camera frame; multiple
+                        faces or mismatched faces may lead to violations.
+                      </li>
+                      <li>
+                        Close all unnecessary applications to avoid
+                        interruptions.
+                      </li>
+                      <li>
+                        Sit upright and face the camera directly during the
+                        test. Do not move away from the screen or attempt to use
+                        another person or device for help.
                       </li>
                     </ul>
 
@@ -370,6 +388,22 @@ const TestPage = () => {
                       </li>
                     </ul>
 
+                    <h3>Face Capture & Malpractice Detection</h3>
+                    <ul>
+                      <li>The system continuously monitors your face.</li>
+                      <li>
+                        If your face is not detected, the test may be flagged.
+                      </li>
+                      <li>
+                        If multiple faces are detected, the test may be
+                        terminated.
+                      </li>
+                      <li>
+                        If your captured face does not match during the test, it
+                        will be marked as a violation.
+                      </li>
+                    </ul>
+
                     <h3>Submission Guidelines</h3>
                     <ul>
                       <li>
@@ -378,12 +412,13 @@ const TestPage = () => {
                       </li>
                       <li>Click the Submit button to finalize your test.</li>
                       <li>
-                        Once submitted, you will not be able to make any further
-                        changes to your code.
+                        Once submitted, you cannot make any further changes to
+                        your code.
                       </li>
                       <li>
-                        After submission, the system will automatically perform
-                        proctoring cleanup and record your final submission.
+                        After submission, the system will automatically record
+                        your final submission and perform any necessary
+                        proctoring cleanup.
                       </li>
                     </ul>
 

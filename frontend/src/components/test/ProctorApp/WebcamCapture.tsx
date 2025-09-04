@@ -43,6 +43,9 @@ interface PassiveDetectionResponse {
     | "invalid_image"
     | "detection_error";
   count?: number;
+  coverage?: number;
+  x_offset?: number;
+  y_offset?: number;
 }
 
 const WebcamCapture: React.FC<WebcamCaptureProps> = ({
@@ -75,6 +78,9 @@ const WebcamCapture: React.FC<WebcamCaptureProps> = ({
     message: string;
     timestamp: number;
   } | null>(null);
+
+  const [faceCoverage, setFaceCoverage] = useState<number>(0);
+  const [faceCentered, setFaceCentered] = useState<boolean>(false);
 
   const dispatch = useDispatch();
   const malpracticeCount = useSelector(
@@ -149,18 +155,32 @@ const WebcamCapture: React.FC<WebcamCaptureProps> = ({
           case "face_detected":
             setFaceDetected(true);
             setMultipleFacesDetected(false);
-            setCanCapture(true);
+
+            // Check if face is properly framed (coverage > 20% and centered within 20%)
+            const coverage = res.data.coverage || 0;
+            const xOffset = res.data.x_offset || 100;
+            const yOffset = res.data.y_offset || 100;
+
+            setFaceCoverage(coverage);
+            setFaceCentered(xOffset < 20 && yOffset < 20);
+
+            // Enable capture only if face is properly framed
+            setCanCapture(coverage >= 20 && xOffset < 20 && yOffset < 20);
             break;
           case "multiple_faces":
             setFaceDetected(false);
             setMultipleFacesDetected(true);
             setCanCapture(false);
+            setFaceCoverage(0);
+            setFaceCentered(false);
             setRateLimitedAlert("⚠️ Multiple faces detected");
             break;
           case "no_face":
             setFaceDetected(false);
             setMultipleFacesDetected(false);
             setCanCapture(false);
+            setFaceCoverage(0);
+            setFaceCentered(false);
             setRateLimitedAlert("🚫 Face not detected");
             break;
           case "invalid_image":
@@ -168,6 +188,8 @@ const WebcamCapture: React.FC<WebcamCaptureProps> = ({
             setFaceDetected(false);
             setMultipleFacesDetected(false);
             setCanCapture(false);
+            setFaceCoverage(0);
+            setFaceCentered(false);
             setRateLimitedAlert("❌ Detection error");
             break;
         }
@@ -593,14 +615,26 @@ const WebcamCapture: React.FC<WebcamCaptureProps> = ({
 
     // During initial face detection
     if (multipleFacesDetected) return "webcam-wrapper multiple-faces";
-    if (faceDetected) return "webcam-wrapper face-detected";
+    if (faceDetected) {
+      if (faceCoverage >= 20 && faceCentered) {
+        return "webcam-wrapper face-detected-ready";
+      } else if (faceCoverage < 20) {
+        return "webcam-wrapper face-too-small";
+      } else {
+        return "webcam-wrapper face-not-centered";
+      }
+    }
     return "webcam-wrapper no-face";
   };
 
   const getButtonText = (): string => {
     if (isLoading) return "Processing...";
     if (!cameraReady) return "Camera Not Available";
-    if (faceDetected) return "Capture & Verify Identity";
+    if (faceDetected) {
+      if (faceCoverage < 20) return "Move closer - Face too small";
+      if (!faceCentered) return "Center your face in the circle";
+      return "Capture & Verify Identity";
+    }
     return "Face Not Detected";
   };
 
@@ -624,6 +658,17 @@ const WebcamCapture: React.FC<WebcamCaptureProps> = ({
           onUserMedia={handleUserMedia}
           onUserMediaError={handleUserMediaError}
         />
+        {cameraReady && faceDetected && !verificationComplete && (
+          <div className="positioning-guide">
+            {faceCoverage < 20 && "Move closer to the camera"}
+            {faceCoverage >= 20 &&
+              !faceCentered &&
+              "Center your face in the circle"}
+            {faceCoverage >= 20 &&
+              faceCentered &&
+              "Perfect! Click Capture to verify"}
+          </div>
+        )}
       </div>
 
       {!verificationComplete && (

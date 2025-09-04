@@ -18,6 +18,93 @@
   position: relative;
   border-radius: 8px;
   border: 2px solid var(--border-color);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+/* State-specific styles */
+.webcam-wrapper.camera-not-ready {
+  border-color: #9e9e9e;
+}
+
+.webcam-wrapper.processing {
+  border-color: #ff9800;
+  box-shadow: 0 0 20px rgba(255, 152, 0, 0.5);
+}
+
+.webcam-wrapper.verified {
+  border-color: #4caf50;
+  box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+}
+
+.webcam-wrapper.malpractice-detected {
+  border-color: #f44336;
+  box-shadow: 0 0 20px rgba(244, 67, 54, 0.5);
+}
+
+.webcam-wrapper.multiple-faces {
+  border-color: #ff5722;
+  box-shadow: 0 0 20px rgba(255, 87, 34, 0.5);
+}
+
+.webcam-wrapper.no-face {
+  border-color: #f44336;
+  box-shadow: 0 0 20px rgba(244, 67, 54, 0.5);
+}
+
+.webcam-wrapper.face-detected-ready {
+  border-color: #4caf50;
+  box-shadow: 0 0 20px rgba(76, 175, 80, 0.8);
+  animation: pulse-ready 2s infinite;
+}
+
+.webcam-wrapper.face-too-small {
+  border-color: #ff9800;
+  box-shadow: 0 0 20px rgba(255, 152, 0, 0.5);
+}
+
+.webcam-wrapper.face-not-centered {
+  border-color: #ff9800;
+  box-shadow: 0 0 20px rgba(255, 152, 0, 0.5);
+  animation: pulse-warning 2s infinite;
+}
+
+/* Animation keyframes */
+@keyframes pulse-ready {
+  0% {
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(76, 175, 80, 1);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.8);
+  }
+}
+
+@keyframes pulse-warning {
+  0% {
+    box-shadow: 0 0 20px rgba(255, 152, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 152, 0, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(255, 152, 0, 0.5);
+  }
+}
+
+/* Framing guide overlay */
+.webcam-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 10%;
+  left: 20%;
+  right: 20%;
+  bottom: 10%;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 5;
 }
 
 .loading-overlay {
@@ -32,6 +119,10 @@
   background-color: rgba(0, 0, 0, 0.5);
   color: white;
   z-index: 10;
+  font-size: 12px;
+  text-align: center;
+  padding: 5px;
+  border-radius: 8px;
 }
 
 .webcam {
@@ -70,4 +161,57 @@
   background-color: #ccc;
   color: white;
   cursor: not-allowed;
+}
+
+.positioning-guide {
+  position: absolute;
+  bottom: -35px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 11px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 4px 6px;
+  border-radius: 4px;
+  z-index: 10;
+  max-width: 170px;
+  margin: 0 auto;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+  .webcam-container {
+    bottom: 10px;
+    right: 5px;
+  }
+
+  .webcam-wrapper {
+    width: 140px;
+    height: 100px;
+  }
+
+  .webcam {
+    width: 180px;
+    height: 180px;
+  }
+
+  .capture-button {
+    min-width: 140px;
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+
+  .positioning-guide {
+    font-size: 10px;
+    bottom: -30px;
+    max-width: 140px;
+  }
+
+  .webcam-wrapper::after {
+    top: 10%;
+    left: 10%;
+    right: 10%;
+    bottom: 10%;
+  }
 }
