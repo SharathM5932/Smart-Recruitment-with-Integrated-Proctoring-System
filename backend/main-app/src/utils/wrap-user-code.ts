@@ -115,8 +115,8 @@ export function wrapUserCode({
       }
       const paramsforPython = extractParamsforPython(signature);
       const paramNames = paramsforPython.map((p) => p.name).join(', ');
-      //   console.log('>> paramNames:', paramNames);
-      //   console.log('>> Params:', params);
+      console.log('>> paramNames:', paramNames);
+      console.log('>> Params:', params);
       // Indent user code properly
       const indentPython = (code: string) =>
         code
@@ -339,7 +339,7 @@ process.stdin.on('end', () => {
 }
 
     const result = ${functionName}(...args);
-    // console.log(formatOutput(result));
+    console.log(formatOutput(result));
   }
 });
 `.trim();
@@ -582,7 +582,7 @@ public class MainClass {
                     rows.Add("[" + string.Join(", ", inner.Cast<object>()) + "]");
                 }
             }
-            Console.WriteLine("[" + string.Join(";", rows) + "]");
+            Console.WriteLine("[" + string.Join(",", rows) + "]");
         } else {
             // Simple array like int[], string[], bool[], double[] etc.
             Console.WriteLine("[" + string.Join(", ", arr.Cast<object>()) + "]");

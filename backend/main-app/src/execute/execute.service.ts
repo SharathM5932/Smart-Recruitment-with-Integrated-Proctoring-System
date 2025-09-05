@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { spawn } from 'child_process';
+import { RunCodeDto } from './dto/run-code.dto';
+import { LANGUAGE_CONFIG } from '../utils/language-config';
+import { ProblemService } from '../problem/problem.service';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { SubmissionService } from 'src/submissions/submission.service';
+import { spawn } from 'child_process';
 import { v4 as uuid } from 'uuid';
-import { ProblemService } from '../problem/problem.service';
-import { LANGUAGE_CONFIG } from '../utils/language-config';
 import { wrapUserCode } from '../utils/wrap-user-code';
-import { RunCodeDto } from './dto/run-code.dto';
 import { TestResult } from './dto/test-result.interface';
+import { SubmissionService } from 'src/submissions/submission.service';
 
 @Injectable()
 export class ExecuteService {
@@ -142,11 +142,8 @@ export class ExecuteService {
 
         // ✅ Special case for C# (.NET) - extract only the final result line
         if (language === 'csharp') {
-          const lines = actual
-            .split('\n')
-            .map((line) => line.trim())
-            .filter(Boolean);
-          actual = lines[lines.length - 1] || '';
+          // Do not split and trim logs; keep them as-is
+          actual = executionResult.stdout.trim();
         }
         results.push({
           input: testCase.input,
@@ -168,7 +165,13 @@ export class ExecuteService {
       total: results.length,
       passed: passedCount,
       output: results.map((r) => r.actual).join('\n'),
-      testResults: results,
+      testResults: results.filter((r, i) => !problem.testCases[i].isHidden),
+      hiddenSummary: {
+        totalHidden: problem.testCases.filter((tc) => tc.isHidden).length,
+        passedHidden: results.filter(
+          (r, i) => problem.testCases[i].isHidden && r.passed,
+        ).length,
+      },
     };
   }
   async submitCode({
