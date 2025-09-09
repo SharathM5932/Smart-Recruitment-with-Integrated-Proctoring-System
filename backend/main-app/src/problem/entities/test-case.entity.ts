@@ -22,7 +22,7 @@ export class TestCase {
   @Column('text', { name: 'expected_output' })
   expectedOutput: string;
 
-  @Column({ default: false })
+  @Column({ type: 'boolean', default: false })
   isHidden: boolean;
 
   // ✅ Add this: relation to Problem

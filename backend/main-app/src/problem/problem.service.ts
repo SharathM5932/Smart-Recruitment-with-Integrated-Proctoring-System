@@ -31,11 +31,17 @@ export class ProblemService {
    * Get a problem + function signature, name, and test cases for a language
    */
   async getProblemForExecution(problemKey: string, languageName: string) {
-    const problem = await this.problemRepo.findOne({ where: { key: problemKey } });
-    if (!problem) throw new NotFoundException(`Problem with key '${problemKey}' not found`);
+    const problem = await this.problemRepo.findOne({
+      where: { key: problemKey },
+    });
+    if (!problem)
+      throw new NotFoundException(`Problem with key '${problemKey}' not found`);
 
-    const language = await this.languageRepo.findOne({ where: { name: languageName } });
-    if (!language) throw new NotFoundException(`Language '${languageName}' not supported`);
+    const language = await this.languageRepo.findOne({
+      where: { name: languageName },
+    });
+    if (!language)
+      throw new NotFoundException(`Language '${languageName}' not supported`);
 
     const signature = await this.signatureRepo.findOne({
       where: {
@@ -58,7 +64,7 @@ export class ProblemService {
 
     if (!signature || !functionName) {
       throw new NotFoundException(
-        `Signature or function name not found for problem '${problemKey}' in language '${languageName}'`
+        `Signature or function name not found for problem '${problemKey}' in language '${languageName}'`,
       );
     }
 
@@ -88,7 +94,7 @@ export class ProblemService {
       order: { id: 'ASC' },
     });
 
-    return problems.map(problem => {
+    return problems.map((problem) => {
       const languageConfigs: {
         language: string;
         signature: string;
@@ -98,7 +104,7 @@ export class ProblemService {
       for (const sig of problem.functionSignatures) {
         const lang = sig.language?.name;
         const name = problem.functionNames.find(
-          fn => fn.languageId === sig.languageId,
+          (fn) => fn.languageId === sig.languageId,
         );
         if (lang && name) {
           languageConfigs.push({
@@ -115,7 +121,7 @@ export class ProblemService {
         description: problem.description,
         difficulty: problem.difficulty, // ✅ include difficulty
         languageConfigs,
-        testCases: problem.testCases.map(tc => ({
+        testCases: problem.testCases.map((tc) => ({
           input: tc.input,
           expectedOutput: tc.expectedOutput,
         })),
@@ -127,16 +133,32 @@ export class ProblemService {
    * Create a new problem
    */
   async addProblem(dto: CreateProblemDto) {
-    const { key, title, description, difficulty,userId, languageConfigs, testCases } = dto;
+    const {
+      key,
+      title,
+      description,
+      difficulty,
+      userId,
+      languageConfigs,
+      testCases,
+    } = dto;
 
     const existing = await this.problemRepo.findOne({ where: { key } });
     if (existing) throw new Error(`Problem with key '${key}' already exists`);
 
-    const problem = this.problemRepo.create({ key, title, description, difficulty, createdBy: {id:userId} }); // ✅ save difficulty
+    const problem = this.problemRepo.create({
+      key,
+      title,
+      description,
+      difficulty,
+      createdBy: { id: userId },
+    }); // ✅ save difficulty
     await this.problemRepo.save(problem);
 
     for (const lang of languageConfigs) {
-      const language = await this.languageRepo.findOne({ where: { name: lang.language } });
+      const language = await this.languageRepo.findOne({
+        where: { name: lang.language },
+      });
       if (!language) throw new Error(`Language '${lang.language}' not found`);
 
       const signature = this.signatureRepo.create({
@@ -160,6 +182,7 @@ export class ProblemService {
         problemId: problem.id,
         input: tc.input,
         expectedOutput: tc.expectedOutput,
+        isHidden: tc.isHidden,
       });
 
       await this.testCaseRepo.save(testCase);

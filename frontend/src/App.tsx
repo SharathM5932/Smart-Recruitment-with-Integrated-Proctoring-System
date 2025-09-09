@@ -117,11 +117,7 @@ function App() {
                 path="jobs"
                 element={
                   <ProtectedRoute
-                    allowedRoles={[
-                      "super admin",
-                      "talent acquisition",
-                      "manager",
-                    ]}
+                    allowedRoles={["super admin", "talent acquisition"]}
                   >
                     <Jobs />
                   </ProtectedRoute>
@@ -130,7 +126,9 @@ function App() {
               <Route
                 path="add-job"
                 element={
-                  <ProtectedRoute allowedRoles={["super admin", "manager"]}>
+                  <ProtectedRoute
+                    allowedRoles={["super admin", "talent acquisition"]}
+                  >
                     <AddJob />
                   </ProtectedRoute>
                 }

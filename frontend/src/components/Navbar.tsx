@@ -74,9 +74,7 @@ const Navbar = () => {
               </li>
             )}
           {isAuthenticated &&
-            (role === "super admin" ||
-              role === "talent acquisition" ||
-              role === "manager") && (
+            (role === "super admin" || role === "talent acquisition") && (
               <li>
                 <NavLink
                   to="/jobs"

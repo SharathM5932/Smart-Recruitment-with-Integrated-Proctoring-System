@@ -255,7 +255,7 @@ export function wrapUserCode({
       return `
 import re
 import sys
-
+import math
 ${fullFunction}
 
 if __name__ == "__main__":

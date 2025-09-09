@@ -4,4 +4,5 @@ export interface TestResult {
   actual: string;
   passed: boolean;
   stderr: string;
+  debugLogs?: string;
 }

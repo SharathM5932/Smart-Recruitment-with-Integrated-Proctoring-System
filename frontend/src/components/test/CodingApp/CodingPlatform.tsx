@@ -72,7 +72,7 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit, autoSubmit }) => {
     const langKey = languageMap[lang];
 
     if (langKey === "python") {
-      return `${data.functionSignature}\n    # Write your code here\n    pass`;
+      return `${data.functionSignature}\n    # Write your code here\n  `;
     } else if (langKey === "javascript") {
       return `${data.functionSignature} {\n    // Write your code here\n    \n}`;
     } else if (langKey === "java") {
@@ -237,17 +237,19 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit, autoSubmit }) => {
 
             <h3>Test Cases</h3>
             <ul className="test-cases">
-              {question.testCases.slice(0, 2).map((test, idx) => (
-                <li key={idx}>
-                  <div className="test-case">
-                    <h4>Test Case {idx + 1}</h4>
-                    <strong>Input:</strong>
-                    <pre>{test.input}</pre>
-                    <strong>Expected Output:</strong>
-                    <pre>{test.expectedOutput}</pre>
-                  </div>
-                </li>
-              ))}
+              {question.testCases
+                .filter((testCase, idx) => testCase.isHidden != true)
+                .map((test, idx) => (
+                  <li key={idx}>
+                    <div className="test-case">
+                      <h4>Test Case {idx + 1}</h4>
+                      <strong>Input:</strong>
+                      <pre>{test.input}</pre>
+                      <strong>Expected Output:</strong>
+                      <pre>{test.expectedOutput}</pre>
+                    </div>
+                  </li>
+                ))}
             </ul>
           </>
         )}
@@ -362,12 +364,12 @@ const CodingPlatform: React.FC<Props> = ({ handleFinalSubmit, autoSubmit }) => {
             </div>
 
             {/* Overall Output */}
-            {runResult.output && (
+            {/* {runResult.output && (
               <div className="overall-output">
                 <h4>Output:</h4>
                 <pre className="output-text">{runResult.output}</pre>
               </div>
-            )}
+            )} */}
 
             {/* Test Results */}
             <div className="test-results">
